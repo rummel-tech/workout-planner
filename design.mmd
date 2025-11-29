@@ -1,0 +1,83 @@
+flowchart TD
+
+%% ===== CLIENT LAYER =====
+    subgraph CLIENT["Flutter App (UI Layer)"]
+        UIHome["Home Dashboard"]
+        UIToday["Today's Workout"]
+        UIWeekly["Weekly Plan"]
+        UIGoals["Goal Management"]
+        UITrends["Trends & Analytics"]
+        UIRoutine["Morning Routine"]
+        UINotifs["Push Notifications"]
+    end
+
+%% ===== NATIVE MODULE =====
+    subgraph NATIVE["Swift HealthKit + WatchKit Connector (iOS Only)"]
+        HKPermissions["HealthKit Permissions"]
+        HKQuery["HealthKit Data Queries"]
+        HKBackground["Background Delivery (HKObserver)"]
+        HKWatch["Apple Watch Connectivity"]
+        HKSend["Send Data to Flutter"]
+    end
+
+%% ===== FRONTEND DATA FLOW =====
+    HKSend --> FlutterSync["Flutter Data Layer\n(Stream + Cache)"]
+    FlutterSync --> UIDisplay["Display Synced Data"]
+
+%% ===== BACKEND LAYER =====
+    subgraph BACKEND["Supabase Backend"]
+        SBAuth["Supabase Auth"]
+        SBDB["Supabase Postgres DB"]
+        SBStorage["Storage (files, exports)"]
+
+        subgraph Edge["Supabase Edge Functions"]
+            EdgeIngest["/health/upload\n(Workout ingestion)"]
+            EdgeTriggerAI["Trigger AI Processing"]
+            EdgeSummary["Generate Lightweight Summaries"]
+        end
+    end
+
+%% ===== PYTHON AI ENGINE =====
+    subgraph PYTHON["Dedicated Python AI Engine"]
+        AIDaily["Daily Plan Generator"]
+        AIWeekly["Weekly Periodization Engine"]
+        AIReadiness["Readiness Model\n(HRV, RHR, sleep, load)"]
+        AIRehab["Shoulder Rehab Logic"]
+        AISwim["Swim Analytics\n(pace, technique, drift)"]
+        AIStrength["Strength Progressions\n(squat to 350 lbs)"]
+        AIMurph["Murph Strategy Engine"]
+        AIGoalMgr["Long-Term Goal Manager"]
+        AIFeedback["User Coaching Feedback"]
+        AIDBsync["Sync Results to Supabase"]
+    end
+
+%% ===== FLOW CONNECTIONS =====
+    FlutterSync --> EdgeIngest
+    EdgeIngest --> SBDB
+
+    SBDB --> EdgeTriggerAI
+    EdgeTriggerAI --> AIDaily
+    EdgeTriggerAI --> AIWeekly
+    EdgeTriggerAI --> AIReadiness
+    EdgeTriggerAI --> AIGoalMgr
+
+    AIDaily --> AIDBsync
+    AIWeekly --> AIDBsync
+    AIReadiness --> AIDBsync
+    AIGoalMgr --> AIDBsync
+    AIDBsync --> SBDB
+
+    SBDB --> FlutterSync
+
+    %% Updates to UI
+    SBDB --> UIHome
+    SBDB --> UIToday
+    SBDB --> UIWeekly
+    SBDB --> UIGoals
+    SBDB --> UITrends
+    SBDB --> UIRoutine
+
+%% Notifications
+    EdgeSummary --> UINotifs
+    AIDaily --> UINotifs
+
