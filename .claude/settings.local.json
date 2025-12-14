@@ -6,7 +6,8 @@
       "Bash(python3:*)",
       "Bash(flutter analyze:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(flutter pub get:*)"
     ]
   }
 }
