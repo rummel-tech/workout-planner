@@ -30,7 +30,6 @@ void main() async {
   final cfg = await themeSvc.load();
   final controller = ThemeController(ThemeController.buildTheme(cfg.seedColor, dark: cfg.mode=='dark'));
 
-  // Check for valid auth token
   final authService = AuthService();
 
   // Set up auth failure callback to redirect to login
@@ -38,9 +37,6 @@ void main() async {
     log.info("Auth failure - redirecting to login");
     navigatorKey.currentState?.pushNamedAndRemoveUntil('/login', (route) => false);
   };
-
-  final isAuthenticated = await authService.isAuthenticated();
-  log.info("Auth status: $isAuthenticated");
 
   // Check if app is configured (API URL set)
   final secureConfig = SecureConfigService();
@@ -57,7 +53,6 @@ void main() async {
   }
 
   runApp(MyApp(
-    isAuthenticated: isAuthenticated,
     isConfigured: isConfigured,
     themeController: controller,
     authService: authService,
@@ -65,28 +60,20 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  final bool isAuthenticated;
   final bool isConfigured;
   final ThemeController themeController;
   final AuthService authService;
   final bool testMode;
   const MyApp({
     super.key,
-    required this.isAuthenticated,
     required this.isConfigured,
     required this.themeController,
     required this.authService,
     this.testMode = false,
   });
 
-  String get _initialRoute {
-    // If not authenticated, go to welcome/login first
-    if (!isAuthenticated) return '/welcome';
-    // If authenticated but not configured, go to setup wizard
-    if (!isConfigured) return '/setup';
-    // If both authenticated and configured, go to home
-    return '/home';
-  }
+  // Always start at welcome screen - no auto-login
+  String get _initialRoute => '/welcome';
 
   @override
   Widget build(BuildContext context) {

@@ -4,12 +4,12 @@ An AI-powered fitness coaching platform with HealthKit integration, readiness sc
 
 ## Overview
 
-The application provides a planning tool to plan a week's worth of workouts and have those workouts associated with goals. The dashboard displays an overview of the day: health metrics, workout, and weather. The dashboard also provides navigation to the user's profile, security credentials, and other user-specific data. The weekly view shows the next 7 days of activities, with each day supporting up to 3 workouts.
+The application provides a planning tool to plan a week's worth of workouts. It associates those workouts with goals and helps you stay on track of your activities. The dashboard displays an overview of the day: health metrics and scheduled workouts. The dashboard also provides navigation to the user's profile, security credentials, and other user-specific data. The weekly view shows the next 7 days of activities, with each day supporting up to 3 workouts.
 
 ## Features
 
 ### Dashboard
-- Daily overview with health metrics, scheduled workouts, and weather
+- Daily overview with health metrics and scheduled workouts
 - Quick access to today's workout details
 - Navigation to profile and settings
 - Readiness score display based on health data
@@ -38,9 +38,9 @@ The application provides a planning tool to plan a week's worth of workouts and 
 - Secure token storage with auto-refresh
 
 ### Health Integration
-- Apple HealthKit integration (iOS)
-- Google Fit integration (Android)
+- Apple HealthKit integration (iOS/macOS only)
 - Sync health metrics to inform readiness scores
+- Note: Currently only Apple platforms are supported
 
 ### AI Coach
 - Chat interface for fitness guidance
@@ -63,5 +63,5 @@ The application provides a planning tool to plan a week's worth of workouts and 
 
 - [Development Guide](docs/DEVELOPMENT.md) - Setup, building, testing, and deployment
 - [Architecture](docs/ARCHITECTURE.md) - System design and component overview
-- [Health Integration](docs/HEALTH_INTEGRATION.md) - HealthKit/Google Fit setup
+- [Health Integration](docs/HEALTH_INTEGRATION.md) - Apple HealthKit setup
 - [Documentation Index](docs/INDEX.md) - Full documentation listing

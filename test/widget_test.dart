@@ -4,13 +4,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:home_dashboard_ui/services/theme_controller.dart';
+import 'package:home_dashboard_ui/services/auth_service.dart';
 
 import 'package:workout_planner/main.dart';
 
 // Helper function to create MyApp with required parameters for testing
 Widget createTestApp() {
   final controller = ThemeController(ThemeData.light());
-  return MyApp(isAuthenticated: true, themeController: controller, testMode: true);
+  final authService = AuthService();
+  return MyApp(
+    isConfigured: true,
+    themeController: controller,
+    authService: authService,
+    testMode: true,
+  );
 }
 
 void main() {

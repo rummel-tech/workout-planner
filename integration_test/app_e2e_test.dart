@@ -18,24 +18,17 @@ void main() {
       final authService = AuthService();
 
       await tester.pumpWidget(MyApp(
-        isAuthenticated: true,
         isConfigured: true,
         themeController: controller,
         authService: authService,
         testMode: true,
       ));
 
-      // App starts and shows loading indicator
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
-
-      // Wait for the data to load
+      // Wait for the app to load
       await tester.pumpAndSettle();
 
-      // Verify that the home screen is displayed
-      expect(find.text('Home'), findsOneWidget);
-      expect(find.text('Readiness: 0.8'), findsOneWidget);
-      expect(find.text('Workout B'), findsOneWidget);
-      expect(find.text('Focus: strength'), findsOneWidget);
+      // App starts at welcome screen (no auto-login)
+      expect(find.text('Welcome'), findsWidgets);
     });
   });
 }
