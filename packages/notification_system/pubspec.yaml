@@ -1,0 +1,15 @@
+name: notification_system
+description: Notification helpers
+version: 0.0.1
+environment:
+  sdk: ">=2.17.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_local_notifications: ^12.0.0
+  timezone: ^0.9.0
+
+flutter:
+  plugin:
+    platforms: {}

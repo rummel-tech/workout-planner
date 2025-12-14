@@ -1,0 +1,24 @@
+name: goals_ui
+description: Goals UI package
+version: 0.0.1
+environment:
+  sdk: ">=2.17.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  freezed_annotation: ^2.0.0
+  http: ^1.1.0
+  home_dashboard_ui:
+    path: ../home_dashboard_ui
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  build_runner: ^2.4.0
+  freezed: ^2.3.2
+  json_serializable: ^6.6.1
+
+flutter:
+  plugin:
+    platforms: {}

@@ -1,0 +1,37 @@
+name: home_dashboard_ui
+description: Home dashboard widgets and screens
+version: 0.0.1
+environment:
+  sdk: ">=2.17.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  rummel_blue_theme:
+    git:
+      url: git@github.com:srummel/resources.git
+      path: rummel_blue_theme
+  ai_coach_chat:
+    path: ../ai_coach_chat
+  todays_workout_ui:
+    path: ../todays_workout_ui
+  goals_ui:
+    path: ../goals_ui
+  weekly_plan_ui:
+    path: ../weekly_plan_ui
+  settings_profile_ui:
+    path: ../settings_profile_ui
+  readiness_ui:
+    path: ../readiness_ui
+  http: ^1.1.0
+  flutter_secure_storage: ^9.2.4
+  shared_preferences: ^2.2.2
+  google_sign_in: ^6.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  plugin:
+    platforms: {}

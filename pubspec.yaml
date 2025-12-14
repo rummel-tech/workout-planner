@@ -1,0 +1,44 @@
+name: workout_planner
+description: AI-powered fitness coaching Flutter app
+version: 0.0.1
+environment:
+  sdk: ">=2.17.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  rummel_blue_theme:
+    git:
+      url: git@github.com:srummel/resources.git
+      path: rummel_blue_theme
+  widgets:
+    path: packages/widgets
+  goals_ui:
+    path: packages/goals_ui
+  readiness_ui:
+    path: packages/readiness_ui
+  home_dashboard_ui:
+    path: packages/home_dashboard_ui
+  settings_profile_ui:
+    path: packages/settings_profile_ui
+  todays_workout_ui:
+    path: packages/todays_workout_ui
+  weekly_plan_ui:
+    path: packages/weekly_plan_ui
+  ai_insights_ui:
+    path: packages/ai_insights_ui
+
+  # Ensure plugins used by transitive packages are registered at app level
+  shared_preferences: ^2.2.2
+  flutter_secure_storage: ^9.2.4
+  google_sign_in: ^6.0.0
+  logging: ^1.2.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
