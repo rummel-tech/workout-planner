@@ -122,7 +122,7 @@ class _HomeDataLoaderState extends State<HomeDataLoader> {
   void _retry() {
     _log.info("Retrying data fetch...");
     setState(() {
-      _dataFuture = _fetch_data();
+      _dataFuture = _fetchData();
     });
   }
 

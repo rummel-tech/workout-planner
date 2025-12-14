@@ -8,7 +8,7 @@ dependencies:
   flutter:
     sdk: flutter
   rummel_blue_theme:
-    path: ../../../../resources/rummel_blue_theme
+    path: ../../packages/rummel_blue_theme
   widgets:
     path: ../../packages/widgets
   goals_ui:
