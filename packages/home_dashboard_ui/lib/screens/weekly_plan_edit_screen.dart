@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:todays_workout_ui/screens/workout_detail_screen.dart';
 import '../services/weekly_plan_service.dart';
+import '../services/workout_service.dart';
+import '../widgets/workout_selection_dialog.dart';
 import 'dart:async';
 
 class WeeklyPlanEditScreen extends StatefulWidget {
@@ -22,6 +24,7 @@ class _WeeklyPlanEditScreenState extends State<WeeklyPlanEditScreen> {
   bool _saving = false;
   bool _saveError = false;
   final WeeklyPlanService _service = WeeklyPlanService();
+  final WorkoutService _workoutService = WorkoutService();
 
   @override
   void initState() {
@@ -134,16 +137,50 @@ class _WeeklyPlanEditScreenState extends State<WeeklyPlanEditScreen> {
       return;
     }
 
-    final result = await Navigator.push<Map<String, dynamic>>(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const WorkoutDetailScreen(),
+    // Show workout selection dialog
+    final selection = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (ctx) => WorkoutSelectionDialog(
+        userId: widget.userId,
+        workoutService: _workoutService,
       ),
     );
 
+    if (selection == null || !mounted) return;
+
+    final action = selection['action'] as String?;
+    Map<String, dynamic>? result;
+
+    if (action == 'create_new') {
+      // Create new workout from scratch
+      result = await Navigator.push<Map<String, dynamic>>(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const WorkoutDetailScreen(),
+        ),
+      );
+    } else if (action == 'copy') {
+      // Use previous workout as-is (copy it)
+      final workout = selection['workout'] as Map<String, dynamic>;
+      result = _workoutService.copyWorkout(workout);
+    } else if (action == 'edit') {
+      // Load previous workout and edit it
+      final workout = selection['workout'] as Map<String, dynamic>;
+      final workoutCopy = _workoutService.copyWorkout(workout);
+      result = await Navigator.push<Map<String, dynamic>>(
+        context,
+        MaterialPageRoute(
+          builder: (_) => WorkoutDetailScreen(existingWorkout: workoutCopy),
+        ),
+      );
+    }
+
     if (result != null && mounted) {
+      // Save workout to service for future reuse
+      await _workoutService.createWorkout(widget.userId, result);
+
       setState(() {
-        day.workouts.add(result);
+        day.workouts.add(result!);
       });
     }
   }
@@ -169,6 +206,14 @@ class _WeeklyPlanEditScreenState extends State<WeeklyPlanEditScreen> {
     );
 
     if (result != null && mounted) {
+      // Update in service if it has an ID, otherwise create new
+      final existingId = day.workouts[index]['id']?.toString();
+      if (existingId != null && existingId.isNotEmpty) {
+        await _workoutService.updateWorkout(widget.userId, existingId, result);
+      } else {
+        await _workoutService.createWorkout(widget.userId, result);
+      }
+
       setState(() {
         day.workouts[index] = result;
       });

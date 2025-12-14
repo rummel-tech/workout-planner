@@ -3,6 +3,8 @@ import 'package:goals_ui/ui_components/goal_model.dart';
 import 'package:goals_ui/services/goals_api_service.dart';
 import 'package:goals_ui/screens/goals_screen.dart';
 import 'package:todays_workout_ui/screens/workout_detail_screen.dart';
+import '../services/workout_service.dart';
+import '../widgets/workout_selection_dialog.dart';
 
 class DayEditScreen extends StatefulWidget {
   final String dayName;
@@ -25,13 +27,13 @@ class DayEditScreen extends StatefulWidget {
 class _DayEditScreenState extends State<DayEditScreen> {
   late List<Map<String, dynamic>> _workouts;
   late TextEditingController _titleController;
-  late TextEditingController _focusController;
   late TextEditingController _descriptionController;
   late TextEditingController _timeGoalController;
   int? _selectedGoalId;
   List<UserGoal> _goals = [];
   bool _goalsLoading = false;
   bool _hasChanges = false;
+  final WorkoutService _workoutService = WorkoutService();
 
   @override
   void initState() {
@@ -58,9 +60,6 @@ class _DayEditScreenState extends State<DayEditScreen> {
         ? _formatDate(DateTime.now())
         : existingTitle;
     _titleController = TextEditingController(text: defaultTitle);
-    _focusController = TextEditingController(
-      text: widget.dayData['focus'] as String? ?? '',
-    );
     _descriptionController = TextEditingController(
       text: widget.dayData['description'] as String? ?? '',
     );
@@ -98,7 +97,6 @@ class _DayEditScreenState extends State<DayEditScreen> {
   @override
   void dispose() {
     _titleController.dispose();
-    _focusController.dispose();
     _descriptionController.dispose();
     _timeGoalController.dispose();
     super.dispose();
@@ -119,27 +117,61 @@ class _DayEditScreenState extends State<DayEditScreen> {
   void _addWorkout() async {
     if (_workouts.length >= 3) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Maximum 3 types per day')),
+        const SnackBar(content: Text('Maximum 3 workouts per day')),
       );
       return;
     }
 
-    final result = await Navigator.push<Map<String, dynamic>>(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const WorkoutDetailScreen(),
+    // Show workout selection dialog
+    final selection = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (ctx) => WorkoutSelectionDialog(
+        userId: widget.userId,
+        workoutService: _workoutService,
       ),
     );
 
+    if (selection == null || !mounted) return;
+
+    final action = selection['action'] as String?;
+    Map<String, dynamic>? result;
+
+    if (action == 'create_new') {
+      // Create new workout from scratch
+      result = await Navigator.push<Map<String, dynamic>>(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const WorkoutDetailScreen(),
+        ),
+      );
+    } else if (action == 'copy') {
+      // Use previous workout as-is (copy it)
+      final workout = selection['workout'] as Map<String, dynamic>;
+      result = _workoutService.copyWorkout(workout);
+    } else if (action == 'edit') {
+      // Load previous workout and edit it
+      final workout = selection['workout'] as Map<String, dynamic>;
+      final workoutCopy = _workoutService.copyWorkout(workout);
+      result = await Navigator.push<Map<String, dynamic>>(
+        context,
+        MaterialPageRoute(
+          builder: (_) => WorkoutDetailScreen(existingWorkout: workoutCopy),
+        ),
+      );
+    }
+
     if (result != null && mounted) {
+      // Save workout to service for future reuse
+      await _workoutService.createWorkout(widget.userId, result);
+
       setState(() {
         // If adding a non-rest workout to a rest day, remove the rest
         if (_workouts.length == 1 &&
             (_workouts[0]['type'] as String?)?.toLowerCase() == 'rest' &&
-            (result['type'] as String?)?.toLowerCase() != 'rest') {
+            (result!['type'] as String?)?.toLowerCase() != 'rest') {
           _workouts.clear();
         }
-        _workouts.add(result);
+        _workouts.add(result!);
         _markChanged();
       });
     }
@@ -154,6 +186,14 @@ class _DayEditScreenState extends State<DayEditScreen> {
     );
 
     if (result != null && mounted) {
+      // Update in service if it has an ID, otherwise create new
+      final existingId = _workouts[index]['id']?.toString();
+      if (existingId != null && existingId.isNotEmpty) {
+        await _workoutService.updateWorkout(widget.userId, existingId, result);
+      } else {
+        await _workoutService.createWorkout(widget.userId, result);
+      }
+
       setState(() {
         _workouts[index] = result;
         _markChanged();
@@ -189,11 +229,15 @@ class _DayEditScreenState extends State<DayEditScreen> {
   }
 
   void _removeWorkout(int index) {
+    // At least one workout is required
+    if (_workouts.length <= 1) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('At least one workout is required')),
+      );
+      return;
+    }
     setState(() {
       _workouts.removeAt(index);
-      if (_workouts.isEmpty) {
-        _workouts.add({'type': 'Rest'});
-      }
       _markChanged();
     });
   }
@@ -203,7 +247,6 @@ class _DayEditScreenState extends State<DayEditScreen> {
     result['day'] = widget.dayName;
     result['workouts'] = _workouts;
     result['title'] = _titleController.text.trim();
-    result['focus'] = _focusController.text.trim();
     result['description'] = _descriptionController.text.trim();
 
     final timeGoal = int.tryParse(_timeGoalController.text.trim());
@@ -225,8 +268,9 @@ class _DayEditScreenState extends State<DayEditScreen> {
       result.remove('goalName');
     }
 
-    // Remove old 'type' field if present
+    // Remove old fields if present
     result.remove('type');
+    result.remove('focus');
 
     Navigator.pop(context, result);
   }
@@ -289,52 +333,8 @@ class _DayEditScreenState extends State<DayEditScreen> {
 
               const SizedBox(height: 24),
 
-              // Type Section
-              _buildSectionHeader('Type', onAdd: _addWorkout),
-              const SizedBox(height: 8),
-              if (_workouts.isEmpty)
-                const Card(
-                  child: ListTile(
-                    leading: Icon(Icons.bedtime, color: Colors.grey),
-                    title: Text('Rest Day'),
-                  ),
-                )
-              else
-                ...List.generate(_workouts.length, (index) {
-                  final workout = _workouts[index];
-                  final type = workout['type'] as String? ?? 'Unknown';
-                  final name = workout['name'] as String? ?? type;
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    child: ListTile(
-                      leading: _iconForWorkout(type),
-                      title: Text(
-                        name,
-                        style: const TextStyle(fontWeight: FontWeight.w500),
-                      ),
-                      subtitle: name != type ? Text(type) : null,
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete_outline, color: Colors.red),
-                        onPressed: () => _removeWorkout(index),
-                      ),
-                      onTap: () => _editWorkout(index),
-                    ),
-                  );
-                }),
-
-              const SizedBox(height: 24),
-
-              // Focus Section
-              _buildSectionHeader('Focus'),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _focusController,
-                decoration: const InputDecoration(
-                  hintText: 'e.g., Upper body strength, Endurance...',
-                  border: OutlineInputBorder(),
-                ),
-                onChanged: (_) => _markChanged(),
-              ),
+              // Workouts Section
+              _buildWorkoutsSection(),
 
               const SizedBox(height: 24),
 
@@ -450,6 +450,197 @@ class _DayEditScreenState extends State<DayEditScreen> {
             });
           },
         ),
+      ),
+    );
+  }
+
+  Widget _buildWorkoutsSection() {
+    final canDelete = _workouts.length > 1;
+    final canAdd = _workouts.length < 3;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Header with count and add button
+        Row(
+          children: [
+            const Text(
+              'Workouts',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primaryContainer,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                '${_workouts.length}/3',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                ),
+              ),
+            ),
+            const Spacer(),
+            if (canAdd)
+              FilledButton.tonalIcon(
+                onPressed: _addWorkout,
+                icon: const Icon(Icons.add, size: 18),
+                label: const Text('Add'),
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 12),
+
+        // Workout cards
+        ...List.generate(_workouts.length, (index) {
+          final workout = _workouts[index];
+          final type = workout['type'] as String? ?? 'Unknown';
+          final name = workout['name'] as String? ?? type;
+          final warmupCount = (workout['warmup'] as List?)?.length ?? 0;
+          final mainCount = (workout['main'] as List?)?.length ?? 0;
+          final cooldownCount = (workout['cooldown'] as List?)?.length ?? 0;
+          final totalExercises = warmupCount + mainCount + cooldownCount;
+
+          return Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: Theme.of(context).colorScheme.outline.withAlpha(100),
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => _editWorkout(index),
+                borderRadius: BorderRadius.circular(12),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      // Workout number badge
+                      Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Center(
+                          child: Text(
+                            '${index + 1}',
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onPrimary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+
+                      // Icon
+                      _iconForWorkout(type),
+                      const SizedBox(width: 12),
+
+                      // Workout info
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 16,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                if (name != type) ...[
+                                  _buildChip(type, Icons.category),
+                                  const SizedBox(width: 8),
+                                ],
+                                if (totalExercises > 0)
+                                  _buildChip(
+                                    '$totalExercises exercise${totalExercises == 1 ? '' : 's'}',
+                                    Icons.fitness_center,
+                                  ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Delete button (only if more than 1 workout)
+                      if (canDelete)
+                        IconButton(
+                          icon: Icon(
+                            Icons.delete_outline,
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                          onPressed: () => _removeWorkout(index),
+                          tooltip: 'Remove workout',
+                        )
+                      else
+                        const SizedBox(width: 48), // Placeholder for alignment
+
+                      // Edit indicator
+                      Icon(
+                        Icons.chevron_right,
+                        color: Theme.of(context).colorScheme.outline,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        }),
+
+        // Helper text
+        if (_workouts.length == 1)
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(
+              'At least one workout is required',
+              style: TextStyle(
+                fontSize: 12,
+                color: Theme.of(context).colorScheme.outline,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildChip(String label, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: Theme.of(context).colorScheme.outline),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
       ),
     );
   }
