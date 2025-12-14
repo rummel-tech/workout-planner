@@ -1,78 +1,67 @@
 # Workout Planner
 
-> AI-powered fitness coaching platform with HealthKit integration, readiness scoring, and personalized workout planning.
+An AI-powered fitness coaching platform with HealthKit integration, readiness scoring, and personalized workout planning.
 
-## 📖 Documentation
+## Overview
 
-### App-Specific Documentation
-- **[Getting Started](./docs/README.md)** - Setup and installation
-- **[Architecture](./docs/ARCHITECTURE.md)** - System design and deployment
-- **[API Reference](./docs/QUICK_REFERENCE.md)** - Commands and endpoints
-- **[Testing Guide](./docs/TESTING.md)** - Running tests and coverage
-- **[Documentation Index](./docs/INDEX.md)** - Complete documentation overview
+The application provides a planning tool to plan a week's worth of workouts and have those workouts associated with goals. The dashboard displays an overview of the day: health metrics, workout, and weather. The dashboard also provides navigation to the user's profile, security credentials, and other user-specific data. The weekly view shows the next 7 days of activities, with each day supporting up to 3 workouts.
 
-### Platform Documentation (Central Repository)
-- **[📚 Documentation Home](https://github.com/srummel/documentation)** - Central platform documentation
-- **[🏗️ Multi-App Architecture](https://github.com/srummel/documentation/blob/main/architecture/multi-app-architecture.md)** - How apps coexist
-- **[🚀 Deployment](https://github.com/srummel/documentation/blob/main/deployment/)** - Production deployment guides
-- **[✅ Best Practices](https://github.com/srummel/documentation/blob/main/best-practices/)** - Platform conventions
-- **[📖 References](https://github.com/srummel/documentation/blob/main/references/)** - Port allocation, tech stack
+## Features
 
-## 🚀 Quick Start
+### Dashboard
+- Daily overview with health metrics, scheduled workouts, and weather
+- Quick access to today's workout details
+- Navigation to profile and settings
+- Readiness score display based on health data
 
-### Backend
-```bash
-cd applications/backend/python_fastapi_server
-pip install -r requirements.txt
-python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
-```
+### Weekly Planner
+- 7-day calendar view of scheduled workouts
+- Maximum 3 workouts per day
+- Day-level editing with title, focus, description, and time goals
+- Link workouts to user goals
 
-### Frontend
-```bash
-cd applications/frontend/apps/mobile_app
-flutter pub get
-flutter run
-```
+### Workout Management
+- Full workout detail editor with warmup, main set, and cooldown sections
+- Structured exercise tracking (sets, reps, weight, duration, distance, rest)
+- Support for multiple workout types: Strength, Run, Swim, Murph, Bike, Yoga, Cardio, Mobility, Rest
+- Edit existing workouts or create new ones
 
-## 📂 Project Structure
+### Goals
+- Create and manage fitness goals
+- Associate workouts with specific goals
+- Track progress toward goals
 
-```
-├── docs/                          # All project documentation
-├── applications/
-│   ├── backend/
-│   │   └── python_fastapi_server/ # FastAPI backend with AI engine
-│   └── frontend/
-│       ├── apps/mobile_app/       # Flutter mobile application
-│       └── packages/              # Reusable Flutter packages
-├── integrations/
-│   └── swift_healthkit_module/    # HealthKit native integration
-└── sql/                           # Database schemas and migrations
-```
+### Authentication
+- Email/password login and registration
+- Google Sign-In (OAuth 2.0)
+- Password reset via email
+- Secure token storage with auto-refresh
 
-For detailed project structure, see [`docs/STRUCTURE.md`](./docs/STRUCTURE.md).
+### Health Integration
+- Apple HealthKit integration (iOS)
+- Google Fit integration (Android)
+- Sync health metrics to inform readiness scores
 
-## 🧪 Testing
+### AI Coach
+- Chat interface for fitness guidance
+- AI-powered workout recommendations
+- Personalized insights based on user data
 
-```bash
-# Backend tests
-cd applications/backend/python_fastapi_server
-pytest --cov
+## Implemented Requirements
 
-# Frontend tests  
-cd applications/frontend/apps/mobile_app
-flutter test
-```
+- [x] Weekly workout planning with 7-day view
+- [x] Maximum 3 workouts per day (enforced)
+- [x] Workout detail page with exercise builder (warmup/main/cooldown)
+- [x] Structured exercise fields (name, sets, reps, weight, duration, distance, rest)
+- [x] Goal creation and workout-goal association
+- [x] User authentication (email/password and Google OAuth)
+- [x] Dashboard with daily overview
+- [x] Readiness score display
+- [x] Profile and settings screens
 
-See [`docs/TESTING.md`](./docs/TESTING.md) for comprehensive testing guide.
+## Documentation
 
-## 🏗️ CI/CD
-
-GitHub Actions workflow runs automated tests, coverage reporting, and artifact storage on every push. See [`.github/workflows/ci.yml`](./.github/workflows/ci.yml).
-
-## 📝 License
-
-See individual package licenses in their respective directories.
-
----
-
-**For complete documentation, browse the [`docs/`](./docs/) directory or see [`docs/INDEX.md`](./docs/INDEX.md).**
+- [Development Guide](docs/DEVELOPMENT.md) - Setup, building, testing, and deployment
+- [Architecture](docs/ARCHITECTURE.md) - System design and component overview
+- [Health Integration](docs/HEALTH_INTEGRATION.md) - HealthKit/Google Fit setup
+- [Documentation Index](docs/INDEX.md) - Full documentation listing

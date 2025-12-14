@@ -11,8 +11,8 @@ Welcome to the Workout Planner documentation. This directory contains all projec
 - **[STRUCTURE.md](./STRUCTURE.md)** - Project structure and organization
 
 ### Getting Started
-- **[README.md](./README.md)** - Main project README with overview and setup instructions
-- **[README_LOCAL.md](./README_LOCAL.md)** - Local development setup guide
+- **[README.md](../README.md)** - Application overview, features, and implemented requirements
+- **[DEVELOPMENT.md](./DEVELOPMENT.md)** - Development setup, building, testing, and deployment
 - **[QUICK_REFERENCE.md](./QUICK_REFERENCE.md)** - Quick reference for common commands and API endpoints
 
 ### Features & Implementation
@@ -33,6 +33,8 @@ Welcome to the Workout Planner documentation. This directory contains all projec
 - **[DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)** - Detailed deployment guide
 - **[QUICK_DEPLOYMENT_POC.md](./QUICK_DEPLOYMENT_POC.md)** - Quick deployment proof of concept guide
 - **[BUILD_AND_FIX_STEPS.md](./BUILD_AND_FIX_STEPS.md)** - Build instructions and common fixes
+- **[PRODUCTION_DEPLOYMENT.md](../PRODUCTION_DEPLOYMENT.md)** ⭐ - Complete production deployment procedures with 8 phases, backend endpoints, security checklist, and platform configuration
+- **[RELEASE_CHECKLIST.md](../RELEASE_CHECKLIST.md)** ⭐ - Pre-launch verification checklist for backend, frontend, and DevOps teams
 
 ## 🔍 Additional Documentation
 
@@ -67,4 +69,4 @@ Key principles:
 
 ---
 
-*Last Updated: November 21, 2025*
+*Last Updated: December 14, 2025*
