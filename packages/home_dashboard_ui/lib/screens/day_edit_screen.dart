@@ -4,6 +4,7 @@ import 'package:goals_ui/services/goals_api_service.dart';
 import 'package:goals_ui/screens/goals_screen.dart';
 import 'package:todays_workout_ui/screens/workout_detail_screen.dart';
 import '../services/workout_service.dart';
+import '../services/auth_service.dart';
 import '../widgets/workout_selection_dialog.dart';
 
 class DayEditScreen extends StatefulWidget {
@@ -11,12 +12,14 @@ class DayEditScreen extends StatefulWidget {
   final Map<String, dynamic> dayData;
   final List<UserGoal>? goals;
   final String userId;
+  final AuthService authService;
 
   const DayEditScreen({
     super.key,
     required this.dayName,
     required this.dayData,
     required this.userId,
+    required this.authService,
     this.goals,
   });
 
@@ -33,24 +36,36 @@ class _DayEditScreenState extends State<DayEditScreen> {
   List<UserGoal> _goals = [];
   bool _goalsLoading = false;
   bool _hasChanges = false;
-  final WorkoutService _workoutService = WorkoutService();
+  late final WorkoutService _workoutService;
 
   @override
   void initState() {
     super.initState();
+    _workoutService = WorkoutService(widget.authService);
 
     // Initialize workouts from day data
-    if (widget.dayData.containsKey('workouts') && widget.dayData['workouts'] is List) {
+    if (widget.dayData.containsKey('workouts') &&
+        widget.dayData['workouts'] is List &&
+        (widget.dayData['workouts'] as List).isNotEmpty) {
       _workouts = (widget.dayData['workouts'] as List)
           .map((w) {
-            final workout = Map<String, dynamic>.from(w as Map);
-            // Ensure all required fields are present
-            return _normalizeWorkout(workout);
+            if (w is Map) {
+              final workout = Map<String, dynamic>.from(w);
+              return _normalizeWorkout(workout);
+            }
+            // Handle string type (legacy format)
+            return _createWorkoutFromType(w.toString());
           })
           .toList();
-    } else if (widget.dayData.containsKey('type')) {
+    } else if (widget.dayData.containsKey('type') && widget.dayData['type'] != null) {
       _workouts = [_createWorkoutFromType(widget.dayData['type'] as String)];
     } else {
+      // Default to one Rest workout
+      _workouts = [_createWorkoutFromType('Rest')];
+    }
+
+    // Ensure at least one workout exists
+    if (_workouts.isEmpty) {
       _workouts = [_createWorkoutFromType('Rest')];
     }
 
@@ -217,14 +232,28 @@ class _DayEditScreenState extends State<DayEditScreen> {
   /// Normalize a workout object to ensure all required fields are present
   Map<String, dynamic> _normalizeWorkout(Map<String, dynamic> workout) {
     final type = workout['type'] as String? ?? 'Rest';
+
+    // Helper to normalize exercise lists
+    List<Map<String, dynamic>> normalizeExerciseList(dynamic data) {
+      if (data == null) return <Map<String, dynamic>>[];
+      if (data is! List) return <Map<String, dynamic>>[];
+      return data.map((e) {
+        if (e is Map) {
+          return Map<String, dynamic>.from(e);
+        }
+        return <String, dynamic>{'name': e.toString()};
+      }).toList();
+    }
+
     return {
       'name': workout['name'] ?? type,
       'type': type,
-      'warmup': workout['warmup'] ?? <Map<String, dynamic>>[],
-      'main': workout['main'] ?? <Map<String, dynamic>>[],
-      'cooldown': workout['cooldown'] ?? <Map<String, dynamic>>[],
+      'warmup': normalizeExerciseList(workout['warmup']),
+      'main': normalizeExerciseList(workout['main']),
+      'cooldown': normalizeExerciseList(workout['cooldown']),
       'notes': workout['notes'] ?? '',
       'status': workout['status'] ?? 'pending',
+      if (workout['id'] != null) 'id': workout['id'],
     };
   }
 
@@ -326,13 +355,6 @@ class _DayEditScreenState extends State<DayEditScreen> {
 
               const SizedBox(height: 24),
 
-              // Related Goal Section
-              _buildSectionHeader('Related Goal'),
-              const SizedBox(height: 8),
-              _buildGoalSelector(),
-
-              const SizedBox(height: 24),
-
               // Workouts Section
               _buildWorkoutsSection(),
 
@@ -366,6 +388,13 @@ class _DayEditScreenState extends State<DayEditScreen> {
                 keyboardType: TextInputType.number,
                 onChanged: (_) => _markChanged(),
               ),
+
+              const SizedBox(height: 24),
+
+              // Related Goal Section (at bottom)
+              _buildSectionHeader('Related Goal'),
+              const SizedBox(height: 8),
+              _buildGoalSelector(),
 
               const SizedBox(height: 32),
             ],
@@ -522,16 +551,16 @@ class _DayEditScreenState extends State<DayEditScreen> {
                 onTap: () => _editWorkout(index),
                 borderRadius: BorderRadius.circular(12),
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(12),
                   child: Row(
                     children: [
                       // Workout number badge
                       Container(
-                        width: 32,
-                        height: 32,
+                        width: 28,
+                        height: 28,
                         decoration: BoxDecoration(
                           color: Theme.of(context).colorScheme.primary,
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(6),
                         ),
                         child: Center(
                           child: Text(
@@ -539,15 +568,16 @@ class _DayEditScreenState extends State<DayEditScreen> {
                             style: TextStyle(
                               color: Theme.of(context).colorScheme.onPrimary,
                               fontWeight: FontWeight.bold,
+                              fontSize: 14,
                             ),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: 12),
 
                       // Icon
                       _iconForWorkout(type),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 10),
 
                       // Workout info
                       Expanded(
@@ -558,23 +588,24 @@ class _DayEditScreenState extends State<DayEditScreen> {
                               name,
                               style: const TextStyle(
                                 fontWeight: FontWeight.w600,
-                                fontSize: 16,
+                                fontSize: 15,
                               ),
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                if (name != type) ...[
-                                  _buildChip(type, Icons.category),
-                                  const SizedBox(width: 8),
-                                ],
-                                if (totalExercises > 0)
-                                  _buildChip(
-                                    '$totalExercises exercise${totalExercises == 1 ? '' : 's'}',
-                                    Icons.fitness_center,
+                            if (totalExercises > 0 || name != type)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 2),
+                                child: Text(
+                                  [
+                                    if (name != type) type,
+                                    if (totalExercises > 0) '$totalExercises exercise${totalExercises == 1 ? '' : 's'}',
+                                  ].join(' • '),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Theme.of(context).colorScheme.outline,
                                   ),
-                              ],
-                            ),
+                                ),
+                              ),
                           ],
                         ),
                       ),
@@ -585,17 +616,18 @@ class _DayEditScreenState extends State<DayEditScreen> {
                           icon: Icon(
                             Icons.delete_outline,
                             color: Theme.of(context).colorScheme.error,
+                            size: 20,
                           ),
                           onPressed: () => _removeWorkout(index),
                           tooltip: 'Remove workout',
-                        )
-                      else
-                        const SizedBox(width: 48), // Placeholder for alignment
+                          visualDensity: VisualDensity.compact,
+                        ),
 
                       // Edit indicator
                       Icon(
                         Icons.chevron_right,
                         color: Theme.of(context).colorScheme.outline,
+                        size: 20,
                       ),
                     ],
                   ),
@@ -621,29 +653,6 @@ class _DayEditScreenState extends State<DayEditScreen> {
     );
   }
 
-  Widget _buildChip(String label, IconData icon) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 12, color: Theme.of(context).colorScheme.outline),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildSectionHeader(String title, {VoidCallback? onAdd}) {
     return Row(

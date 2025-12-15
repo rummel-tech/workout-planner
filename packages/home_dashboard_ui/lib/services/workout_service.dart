@@ -1,26 +1,30 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'web_storage_stub.dart' if (dart.library.html) 'web_storage_web.dart';
-import 'api_config.dart';
+import 'auth_service.dart';
 
 /// Service for managing workout templates (CRUD operations)
 class WorkoutService {
   static const _storageKey = 'saved_workouts';
-  String get _baseUrl => ApiConfig.baseUrl;
+  final AuthService _authService;
+
+  WorkoutService(this._authService);
 
   /// Get all saved workouts for a user
   Future<List<Map<String, dynamic>>> getWorkouts(String userId) async {
     // Try backend first
     try {
-      final response = await http.get(
-        Uri.parse('$_baseUrl/workouts?user_id=$userId'),
-      ).timeout(const Duration(seconds: 5));
+      final response = await _authService.authenticatedRequest(
+        method: 'GET',
+        endpoint: '/workouts?user_id=$userId',
+      );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data is List) {
-          final workouts = data.cast<Map<String, dynamic>>();
+          final workouts = List<Map<String, dynamic>>.from(
+            data.map((item) => Map<String, dynamic>.from(item)),
+          );
           // Cache locally
           await _saveLocal(userId, workouts);
           return workouts;
@@ -37,9 +41,10 @@ class WorkoutService {
   /// Get a specific workout by ID
   Future<Map<String, dynamic>?> getWorkout(String userId, String workoutId) async {
     try {
-      final response = await http.get(
-        Uri.parse('$_baseUrl/workouts/$workoutId?user_id=$userId'),
-      ).timeout(const Duration(seconds: 5));
+      final response = await _authService.authenticatedRequest(
+        method: 'GET',
+        endpoint: '/workouts/$workoutId?user_id=$userId',
+      );
 
       if (response.statusCode == 200) {
         return json.decode(response.body) as Map<String, dynamic>;
@@ -67,11 +72,11 @@ class WorkoutService {
 
     // Try backend first
     try {
-      final response = await http.post(
-        Uri.parse('$_baseUrl/workouts'),
-        headers: {'Content-Type': 'application/json'},
+      final response = await _authService.authenticatedRequest(
+        method: 'POST',
+        endpoint: '/workouts',
         body: json.encode(workoutWithMeta),
-      ).timeout(const Duration(seconds: 5));
+      );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final saved = json.decode(response.body) as Map<String, dynamic>;
@@ -112,11 +117,11 @@ class WorkoutService {
 
     // Try backend first
     try {
-      final response = await http.put(
-        Uri.parse('$_baseUrl/workouts/$workoutId'),
-        headers: {'Content-Type': 'application/json'},
+      final response = await _authService.authenticatedRequest(
+        method: 'PUT',
+        endpoint: '/workouts/$workoutId',
         body: json.encode(workoutWithMeta),
-      ).timeout(const Duration(seconds: 5));
+      );
 
       if (response.statusCode == 200) {
         final updated = json.decode(response.body) as Map<String, dynamic>;
@@ -151,9 +156,10 @@ class WorkoutService {
   Future<bool> deleteWorkout(String userId, String workoutId) async {
     // Try backend first
     try {
-      final response = await http.delete(
-        Uri.parse('$_baseUrl/workouts/$workoutId?user_id=$userId'),
-      ).timeout(const Duration(seconds: 5));
+      final response = await _authService.authenticatedRequest(
+        method: 'DELETE',
+        endpoint: '/workouts/$workoutId?user_id=$userId',
+      );
 
       if (response.statusCode == 200 || response.statusCode == 204) {
         // Remove from local cache
@@ -217,7 +223,9 @@ class WorkoutService {
         try {
           final decoded = json.decode(raw);
           if (decoded is List) {
-            return decoded.cast<Map<String, dynamic>>();
+            return List<Map<String, dynamic>>.from(
+              decoded.map((item) => Map<String, dynamic>.from(item)),
+            );
           }
         } catch (_) {}
       }

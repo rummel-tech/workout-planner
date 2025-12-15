@@ -751,14 +751,49 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _navigateToDayDetail(Map<String, dynamic> workout) async {
     final dayName = workout['day'] as String? ?? 'Unknown';
+    final authService = widget.authService ?? AuthService();
+
+    // Ensure dayData has proper workout structure
+    final normalizedDayData = Map<String, dynamic>.from(workout);
+    if (!normalizedDayData.containsKey('workouts') ||
+        normalizedDayData['workouts'] is! List ||
+        (normalizedDayData['workouts'] as List).isEmpty) {
+      if (normalizedDayData.containsKey('type') && normalizedDayData['type'] != null) {
+        normalizedDayData['workouts'] = [
+          {
+            'type': normalizedDayData['type'],
+            'name': normalizedDayData['type'],
+            'warmup': <Map<String, dynamic>>[],
+            'main': <Map<String, dynamic>>[],
+            'cooldown': <Map<String, dynamic>>[],
+            'notes': '',
+            'status': 'pending',
+          }
+        ];
+      } else {
+        normalizedDayData['workouts'] = [
+          {
+            'type': 'Rest',
+            'name': 'Rest',
+            'warmup': <Map<String, dynamic>>[],
+            'main': <Map<String, dynamic>>[],
+            'cooldown': <Map<String, dynamic>>[],
+            'notes': '',
+            'status': 'pending',
+          }
+        ];
+      }
+    }
+
     final result = await Navigator.push<Map<String, dynamic>>(
       context,
       MaterialPageRoute(
         builder: (_) => DayEditScreen(
           dayName: dayName,
-          dayData: workout,
+          dayData: normalizedDayData,
           userId: _userId,
           goals: _goals,
+          authService: authService,
         ),
       ),
     );
@@ -830,6 +865,7 @@ class _HomeScreenState extends State<HomeScreen> {
               WeeklyPlanPreview(
                 weeklyPlan: _weeklyPlan,
                 userId: _userId,
+                authService: widget.authService ?? AuthService(),
                 onUpdated: (updated) async {
                   setState(() => _weeklyPlan = updated);
                   try {
@@ -964,12 +1000,7 @@ class _HomeScreenState extends State<HomeScreen> {
             IconButton(
               icon: const Icon(Icons.logout),
               tooltip: 'Logout',
-              onPressed: () async {
-                await AuthService().logout();
-                if (context.mounted) {
-                  Navigator.pushReplacementNamed(context, '/welcome');
-                }
-              },
+              onPressed: _confirmLogout,
             ),
           ],
         ),
@@ -1063,6 +1094,36 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ],
     );
+  }
+
+  // ==================== LOGOUT ====================
+  Future<void> _confirmLogout() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Logout'),
+        content: const Text('Are you sure you want to logout?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Logout'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      final authService = widget.authService ?? AuthService();
+      await authService.logout();
+      if (mounted) {
+        // Navigate back to welcome/login screen and clear stack
+        Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+      }
+    }
   }
 
   // ==================== HELPERS ====================

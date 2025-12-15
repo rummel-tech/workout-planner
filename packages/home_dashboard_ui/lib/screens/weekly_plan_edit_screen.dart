@@ -2,15 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:todays_workout_ui/screens/workout_detail_screen.dart';
 import '../services/weekly_plan_service.dart';
 import '../services/workout_service.dart';
+import '../services/auth_service.dart';
 import '../widgets/workout_selection_dialog.dart';
 import 'dart:async';
 
 class WeeklyPlanEditScreen extends StatefulWidget {
   final Map<String, dynamic> initialPlan;
   final String userId;
+  final AuthService authService;
   const WeeklyPlanEditScreen({
     super.key,
     required this.initialPlan,
+    required this.authService,
     this.userId = 'user-123',
   });
 
@@ -24,11 +27,12 @@ class _WeeklyPlanEditScreenState extends State<WeeklyPlanEditScreen> {
   bool _saving = false;
   bool _saveError = false;
   final WeeklyPlanService _service = WeeklyPlanService();
-  final WorkoutService _workoutService = WorkoutService();
+  late final WorkoutService _workoutService;
 
   @override
   void initState() {
     super.initState();
+    _workoutService = WorkoutService(widget.authService);
     final rawDays = widget.initialPlan['days'] as List<dynamic>? ?? [];
     _days = [
       'Monday',

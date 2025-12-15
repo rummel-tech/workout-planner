@@ -2,15 +2,18 @@ import 'package:flutter/material.dart';
 import '../screens/weekly_plan_edit_screen.dart';
 import '../screens/day_edit_screen.dart';
 import '../services/weekly_plan_service.dart';
+import '../services/auth_service.dart';
 
 class WeeklyPlanPreview extends StatefulWidget {
   final Map<String, dynamic> weeklyPlan;
   final ValueChanged<Map<String, dynamic>>? onUpdated;
   final String userId;
+  final AuthService authService;
 
   const WeeklyPlanPreview({
     super.key,
     required this.weeklyPlan,
+    required this.authService,
     this.onUpdated,
     this.userId = 'user-123',
   });
@@ -157,7 +160,11 @@ class _WeeklyPlanPreviewState extends State<WeeklyPlanPreview> {
                     final updated = await Navigator.push<Map<String, dynamic>>(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => WeeklyPlanEditScreen(initialPlan: _currentPlan, userId: widget.userId),
+                        builder: (_) => WeeklyPlanEditScreen(
+                          initialPlan: _currentPlan,
+                          userId: widget.userId,
+                          authService: widget.authService,
+                        ),
                       ),
                     );
                     if (updated != null && mounted) {
@@ -432,10 +439,51 @@ class _WeeklyPlanPreviewState extends State<WeeklyPlanPreview> {
   }
 
   Future<void> _showDayDetails(BuildContext context, String dayName, Map<String, dynamic> dayData) async {
+    // Ensure dayData has proper workout structure
+    final normalizedDayData = Map<String, dynamic>.from(dayData);
+
+    // Ensure workouts array exists and has at least one workout
+    if (!normalizedDayData.containsKey('workouts') ||
+        normalizedDayData['workouts'] is! List ||
+        (normalizedDayData['workouts'] as List).isEmpty) {
+      // Check for legacy 'type' field
+      if (normalizedDayData.containsKey('type') && normalizedDayData['type'] != null) {
+        normalizedDayData['workouts'] = [
+          {
+            'type': normalizedDayData['type'],
+            'name': normalizedDayData['type'],
+            'warmup': <Map<String, dynamic>>[],
+            'main': <Map<String, dynamic>>[],
+            'cooldown': <Map<String, dynamic>>[],
+            'notes': '',
+            'status': 'pending',
+          }
+        ];
+      } else {
+        // Default to Rest workout
+        normalizedDayData['workouts'] = [
+          {
+            'type': 'Rest',
+            'name': 'Rest',
+            'warmup': <Map<String, dynamic>>[],
+            'main': <Map<String, dynamic>>[],
+            'cooldown': <Map<String, dynamic>>[],
+            'notes': '',
+            'status': 'pending',
+          }
+        ];
+      }
+    }
+
     final result = await Navigator.push<Map<String, dynamic>>(
       context,
       MaterialPageRoute(
-        builder: (_) => DayEditScreen(dayName: dayName, dayData: dayData, userId: widget.userId),
+        builder: (_) => DayEditScreen(
+          dayName: dayName,
+          dayData: normalizedDayData,
+          userId: widget.userId,
+          authService: widget.authService,
+        ),
       ),
     );
 

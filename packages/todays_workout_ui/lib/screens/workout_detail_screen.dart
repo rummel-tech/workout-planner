@@ -64,8 +64,10 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
     return data.map((e) {
       if (e is String) {
         return Exercise(name: e);
-      } else if (e is Map<String, dynamic>) {
-        return Exercise.fromJson(e);
+      } else if (e is Map) {
+        // Handle both Map<String, dynamic> and Map<dynamic, dynamic>
+        final map = Map<String, dynamic>.from(e);
+        return Exercise.fromJson(map);
       }
       return Exercise(name: e.toString());
     }).toList();
@@ -170,9 +172,12 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
         appBar: AppBar(
           title: Text(_isEditing ? 'Edit Workout' : 'Add Workout'),
           actions: [
-            TextButton(
-              onPressed: _save,
-              child: const Text('Save'),
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: FilledButton(
+                onPressed: _save,
+                child: const Text('Save'),
+              ),
             ),
           ],
         ),
@@ -422,6 +427,7 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
   late TextEditingController _notesController;
   late String _weightUnit;
   late String _distanceUnit;
+  bool _nameIsValid = false;
 
   bool get _isStrengthType =>
       ['strength', 'murph'].contains(widget.workoutType.toLowerCase());
@@ -443,10 +449,20 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
     _notesController = TextEditingController(text: e?.notes ?? '');
     _weightUnit = e?.weightUnit ?? 'lbs';
     _distanceUnit = e?.distanceUnit ?? 'miles';
+    _nameIsValid = _nameController.text.trim().isNotEmpty;
+    _nameController.addListener(_onNameChanged);
+  }
+
+  void _onNameChanged() {
+    final isValid = _nameController.text.trim().isNotEmpty;
+    if (isValid != _nameIsValid) {
+      setState(() => _nameIsValid = isValid);
+    }
   }
 
   @override
   void dispose() {
+    _nameController.removeListener(_onNameChanged);
     _nameController.dispose();
     _setsController.dispose();
     _repsController.dispose();
@@ -612,7 +628,7 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
           child: const Text('Cancel'),
         ),
         FilledButton(
-          onPressed: _nameController.text.trim().isEmpty ? null : _save,
+          onPressed: _nameIsValid ? _save : null,
           child: const Text('Save'),
         ),
       ],
