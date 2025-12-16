@@ -135,5 +135,5 @@ Key endpoints: `/auth/login`, `/auth/register`, `/goals`, `/daily-plans`, `/week
 Frontend deploys to GitHub Pages via infrastructure repo:
 
 ```bash
-gh workflow run deploy-workout-planner-frontend.yml --repo srummel/infrastructure
+gh workflow run deploy-workout-planner-frontend.yml --repo rummel-tech/infrastructure
 ```

@@ -177,13 +177,13 @@ base64 -i AuthKey_XXXXXXXXXX.p8 | pbcopy
 ```bash
 # Using GitHub CLI
 gh workflow run deploy-workout-planner-ios.yml \
-  --repo srummel/infrastructure \
+  --repo rummel-tech/infrastructure \
   -f repo_ref=main \
   -f deploy_target=artifact
 
 # For TestFlight deployment
 gh workflow run deploy-workout-planner-ios.yml \
-  --repo srummel/infrastructure \
+  --repo rummel-tech/infrastructure \
   -f repo_ref=main \
   -f deploy_target=testflight
 ```
@@ -192,7 +192,7 @@ gh workflow run deploy-workout-planner-ios.yml \
 
 ```bash
 # From workout-planner repository
-gh api repos/srummel/infrastructure/dispatches \
+gh api repos/rummel-tech/infrastructure/dispatches \
   -f event_type=deploy-workout-planner-ios \
   -f client_payload[ref]=main
 ```
@@ -230,7 +230,7 @@ Required for App Store Connect:
 ```bash
 # Option A: Use GitHub Actions (recommended)
 gh workflow run deploy-workout-planner-ios.yml \
-  --repo srummel/infrastructure \
+  --repo rummel-tech/infrastructure \
   -f deploy_target=testflight
 
 # Option B: Manual upload via Xcode

@@ -109,7 +109,7 @@ Before deploying to production, complete the checklist in [`RELEASE_CHECKLIST.md
 
 See [`PRODUCTION_DEPLOYMENT.md`](../PRODUCTION_DEPLOYMENT.md) for detailed deployment procedures.
 
-**Production URL:** https://srummel.github.io/workout-planner/
+**Production URL:** https://rummel-tech.github.io/workout-planner/
 
 ## Related Repositories
 

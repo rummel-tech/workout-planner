@@ -46,7 +46,7 @@ Welcome to the Workout Planner documentation. This directory contains all projec
 
 ## 📖 Documentation Standards
 
-See **[Documentation Conventions](https://github.com/srummel/documentation/blob/main/best-practices/documentation-conventions.md)** for complete documentation guidelines including:
+See **[Documentation Conventions](https://github.com/rummel-tech/documentation/blob/main/best-practices/documentation-conventions.md)** for complete documentation guidelines including:
 - File naming conventions
 - Content organization
 - Update frequency requirements

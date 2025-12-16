@@ -423,8 +423,8 @@ packages:
     description:
       path: rummel_blue_theme
       ref: HEAD
-      resolved-ref: "909175dd1687f72ebce7a49d78e71efa740ca3d9"
-      url: "git@github.com:srummel/resources.git"
+      resolved-ref: "650ee5ebad2ecf44b40e7bfe5a9987ec0b8dbb77"
+      url: "https://github.com/rummel-tech/resources.git"
     source: git
     version: "1.0.0"
   settings_profile_ui:
