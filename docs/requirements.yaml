@@ -1,0 +1,680 @@
+# Workout Planner - Requirements
+# Version: 1.0
+# Generated: 2024-12-24
+#
+# Priority Levels:
+#   P0 - Critical: Must have for MVP
+#   P1 - High: Important for complete experience
+#   P2 - Medium: Nice to have
+#   P3 - Low: Future consideration
+#
+# Status Values:
+#   implemented, partial, planned, not_started
+
+metadata:
+  project: Workout Planner
+  version: "1.0"
+  last_updated: "2024-12-24"
+
+functional_requirements:
+
+  authentication:
+    description: User authentication and account management
+    requirements:
+      - id: AUTH-001
+        title: Email/password registration with code
+        description: Users can register with email, password, and registration code
+        priority: P0
+        status: implemented
+
+      - id: AUTH-002
+        title: Email/password login
+        description: Users can log in with email and password
+        priority: P0
+        status: implemented
+
+      - id: AUTH-003
+        title: Google OAuth login
+        description: Users can log in with Google OAuth
+        priority: P1
+        status: implemented
+
+      - id: AUTH-004
+        title: Password reset
+        description: Users can reset password via email
+        priority: P1
+        status: implemented
+
+      - id: AUTH-005
+        title: Registration code validation
+        description: System validates registration codes before account creation
+        priority: P0
+        status: implemented
+
+      - id: AUTH-006
+        title: Waitlist fallback
+        description: Users without valid code are added to waitlist
+        priority: P1
+        status: implemented
+
+      - id: AUTH-007
+        title: Auto token refresh
+        description: JWT tokens refresh automatically when expired
+        priority: P0
+        status: implemented
+
+      - id: AUTH-008
+        title: Admin code generation
+        description: Admin users can generate registration codes
+        priority: P1
+        status: implemented
+
+      - id: AUTH-009
+        title: Admin waitlist management
+        description: Admin users can invite users from waitlist
+        priority: P2
+        status: implemented
+
+  onboarding:
+    description: First-time user setup and configuration
+    requirements:
+      - id: ONBOARD-001
+        title: Setup wizard
+        description: First-time users complete setup wizard
+        priority: P0
+        status: implemented
+
+      - id: ONBOARD-002
+        title: API endpoint configuration
+        description: Users can configure API endpoint (dev/staging/prod)
+        priority: P1
+        status: implemented
+
+      - id: ONBOARD-003
+        title: AI provider configuration
+        description: Users can configure AI provider (OpenAI/Anthropic)
+        priority: P1
+        status: implemented
+
+      - id: ONBOARD-004
+        title: HealthKit toggle
+        description: Users can enable/disable HealthKit integration
+        priority: P1
+        status: implemented
+
+      - id: ONBOARD-005
+        title: Secure configuration storage
+        description: Configuration is stored securely (encrypted)
+        priority: P0
+        status: implemented
+
+  home_dashboard:
+    description: Main dashboard and daily overview
+    requirements:
+      - id: HOME-001
+        title: Date display
+        description: Display current date and day name
+        priority: P0
+        status: implemented
+
+      - id: HOME-002
+        title: Readiness score display
+        description: Display readiness score (0-100%) with color coding
+        priority: P0
+        status: implemented
+
+      - id: HOME-003
+        title: Quick stats display
+        description: Display quick stats - Sleep, HRV, Resting HR
+        priority: P0
+        status: implemented
+
+      - id: HOME-004
+        title: Today's workout card
+        description: Display today's scheduled workout with details
+        priority: P0
+        status: implemented
+
+      - id: HOME-005
+        title: Tomorrow preview
+        description: Display tomorrow's workout preview
+        priority: P1
+        status: implemented
+
+      - id: HOME-006
+        title: AI Coach access
+        description: Provide quick access to AI Coach chat
+        priority: P1
+        status: implemented
+
+      - id: HOME-007
+        title: Quick log FAB
+        description: FAB opens quick logging options
+        priority: P1
+        status: implemented
+
+  weekly_planning:
+    description: Weekly workout schedule management
+    requirements:
+      - id: WEEK-001
+        title: Weekly overview
+        description: Display 7-day weekly plan overview
+        priority: P0
+        status: implemented
+
+      - id: WEEK-002
+        title: Day edit navigation
+        description: Users can tap any day to view/edit details
+        priority: P0
+        status: implemented
+
+      - id: WEEK-003
+        title: Multiple workouts per day
+        description: Each day supports multiple workouts
+        priority: P1
+        status: implemented
+
+      - id: WEEK-004
+        title: Workout metadata
+        description: Workouts have type, focus, time goal, description
+        priority: P0
+        status: implemented
+
+      - id: WEEK-005
+        title: Goal linking
+        description: Workouts can be linked to goals
+        priority: P1
+        status: implemented
+
+      - id: WEEK-006
+        title: Backend sync
+        description: Changes sync to backend
+        priority: P0
+        status: implemented
+
+      - id: WEEK-007
+        title: Workout types
+        description: "Support types: Strength, Run, Swim, Murph, Mobility, Bike, Yoga, Cardio, Rest"
+        priority: P0
+        status: implemented
+
+  workout_detail:
+    description: Individual workout management
+    requirements:
+      - id: WORKOUT-001
+        title: Workout sections
+        description: Workouts have warmup, main, cooldown sections
+        priority: P0
+        status: implemented
+
+      - id: WORKOUT-002
+        title: Exercise attributes
+        description: "Exercises have: name, sets, reps, weight, duration, distance, rest"
+        priority: P0
+        status: implemented
+
+      - id: WORKOUT-003
+        title: Exercise management
+        description: Users can add/remove exercises from each section
+        priority: P0
+        status: implemented
+
+      - id: WORKOUT-004
+        title: Workout status
+        description: "Workout status: pending, complete, skipped"
+        priority: P1
+        status: implemented
+
+      - id: WORKOUT-005
+        title: Workout notes
+        description: Workouts support notes field
+        priority: P1
+        status: implemented
+
+  goal_management:
+    description: Fitness goal tracking
+    requirements:
+      - id: GOAL-001
+        title: Goal creation
+        description: Users can create fitness goals
+        priority: P0
+        status: implemented
+
+      - id: GOAL-002
+        title: Goal attributes
+        description: "Goals have: type, target value, unit, deadline, notes"
+        priority: P0
+        status: implemented
+
+      - id: GOAL-003
+        title: Goal list view
+        description: Users can view list of all goals
+        priority: P0
+        status: implemented
+
+      - id: GOAL-004
+        title: Goal editing
+        description: Users can edit existing goals
+        priority: P0
+        status: implemented
+
+      - id: GOAL-005
+        title: Goal deletion
+        description: Users can delete (deactivate) goals
+        priority: P1
+        status: implemented
+
+      - id: GOAL-006
+        title: Goal plans
+        description: Goals can have associated plans
+        priority: P1
+        status: implemented
+
+      - id: GOAL-007
+        title: Plan viewing
+        description: Users can view plans for each goal
+        priority: P1
+        status: implemented
+
+  health_metrics:
+    description: Health and fitness data logging
+    requirements:
+      - id: HEALTH-001
+        title: Manual health logging
+        description: Users can log daily health metrics manually
+        priority: P0
+        status: implemented
+
+      - id: HEALTH-002
+        title: Health metric types
+        description: "Metrics: HRV, RHR, VO2Max, Sleep, Weight, RPE, Soreness, Mood"
+        priority: P0
+        status: implemented
+
+      - id: HEALTH-003
+        title: Strength logging
+        description: Users can log strength training sets
+        priority: P0
+        status: implemented
+
+      - id: HEALTH-004
+        title: Strength attributes
+        description: "Strength metrics: lift type, weight, reps, sets, velocity"
+        priority: P0
+        status: implemented
+
+      - id: HEALTH-005
+        title: 1RM calculation
+        description: System calculates estimated 1RM from strength data
+        priority: P1
+        status: implemented
+
+      - id: HEALTH-006
+        title: Swim logging
+        description: Users can log swim workouts
+        priority: P0
+        status: implemented
+
+      - id: HEALTH-007
+        title: Swim attributes
+        description: "Swim metrics: distance, duration, stroke type, pace"
+        priority: P0
+        status: implemented
+
+      - id: HEALTH-008
+        title: Murph logging
+        description: Users can log Murph workouts
+        priority: P1
+        status: implemented
+
+      - id: HEALTH-009
+        title: Historical logging
+        description: All metrics support date picker for past entries
+        priority: P1
+        status: implemented
+
+      - id: HEALTH-010
+        title: History view
+        description: Users can view history of logged metrics
+        priority: P1
+        status: implemented
+
+  readiness:
+    description: Recovery and training readiness scoring
+    requirements:
+      - id: READY-001
+        title: Readiness calculation
+        description: System calculates daily readiness score (0-100%)
+        priority: P0
+        status: implemented
+
+      - id: READY-002
+        title: Scoring weights
+        description: "Score based on: HRV (40%), RHR (30%), Sleep (30%)"
+        priority: P0
+        status: implemented
+
+      - id: READY-003
+        title: Baseline normalization
+        description: Score uses 14-day baseline for normalization
+        priority: P1
+        status: implemented
+
+      - id: READY-004
+        title: Color coding
+        description: "Green (>=70%), Orange (40-69%), Red (<40%)"
+        priority: P0
+        status: implemented
+
+      - id: READY-005
+        title: Intensity recommendations
+        description: Readiness influences workout intensity recommendations
+        priority: P1
+        status: implemented
+
+  ai_coach:
+    description: AI-powered fitness coaching chat
+    requirements:
+      - id: CHAT-001
+        title: Send messages
+        description: Users can send messages to AI coach
+        priority: P0
+        status: implemented
+
+      - id: CHAT-002
+        title: AI responses
+        description: AI responds with fitness guidance
+        priority: P0
+        status: implemented
+
+      - id: CHAT-003
+        title: Goal context
+        description: AI has context of user's goals
+        priority: P0
+        status: implemented
+
+      - id: CHAT-004
+        title: Health context
+        description: AI has context of user's health metrics
+        priority: P0
+        status: implemented
+
+      - id: CHAT-005
+        title: Readiness context
+        description: AI has context of user's readiness score
+        priority: P0
+        status: implemented
+
+      - id: CHAT-006
+        title: Session persistence
+        description: Chat sessions persist message history
+        priority: P1
+        status: implemented
+
+      - id: CHAT-007
+        title: Multiple AI providers
+        description: Support multiple AI providers (OpenAI, Anthropic)
+        priority: P1
+        status: implemented
+
+  healthkit_integration:
+    description: Apple HealthKit data synchronization
+    requirements:
+      - id: HKIT-001
+        title: Permission request
+        description: App requests HealthKit permissions
+        priority: P0
+        status: implemented
+
+      - id: HKIT-002
+        title: Auto sync
+        description: Auto-sync health data every 15 minutes
+        priority: P1
+        status: implemented
+
+      - id: HKIT-003
+        title: Manual sync
+        description: Manual sync button available
+        priority: P0
+        status: implemented
+
+      - id: HKIT-004
+        title: Workout sync
+        description: Sync workout data (distance, calories)
+        priority: P0
+        status: implemented
+
+      - id: HKIT-005
+        title: Heart rate sync
+        description: Sync heart rate samples
+        priority: P0
+        status: implemented
+
+      - id: HKIT-006
+        title: HRV sync
+        description: Sync HRV data
+        priority: P0
+        status: implemented
+
+      - id: HKIT-007
+        title: Resting HR sync
+        description: Sync resting heart rate
+        priority: P0
+        status: implemented
+
+      - id: HKIT-008
+        title: Sleep sync
+        description: Sync sleep data
+        priority: P0
+        status: implemented
+
+      - id: HKIT-009
+        title: Deduplication
+        description: Deduplicate samples on backend
+        priority: P0
+        status: implemented
+
+  profile_settings:
+    description: User profile and app settings
+    requirements:
+      - id: PROF-001
+        title: Profile display
+        description: Display user profile (name, email, avatar)
+        priority: P0
+        status: implemented
+
+      - id: PROF-002
+        title: Profile editing
+        description: Users can edit profile information
+        priority: P1
+        status: implemented
+
+      - id: PROF-003
+        title: Theme toggle
+        description: Light/dark theme toggle
+        priority: P1
+        status: implemented
+
+      - id: PROF-004
+        title: Theme customization
+        description: Theme color customization
+        priority: P2
+        status: implemented
+
+      - id: PROF-005
+        title: Config viewing
+        description: View secure configuration (masked)
+        priority: P1
+        status: implemented
+
+      - id: PROF-006
+        title: Logout
+        description: Log out functionality
+        priority: P0
+        status: implemented
+
+non_functional_requirements:
+
+  performance:
+    description: System performance targets
+    requirements:
+      - id: PERF-001
+        title: API response time
+        target: "< 200ms (p95)"
+        priority: P0
+        status: implemented
+
+      - id: PERF-002
+        title: App cold start
+        target: "< 3 seconds"
+        priority: P1
+        status: partial
+
+      - id: PERF-003
+        title: Health sync time
+        target: "< 10 seconds (100 samples)"
+        priority: P1
+        status: implemented
+
+      - id: PERF-004
+        title: Cached response time
+        target: "< 50ms"
+        priority: P1
+        status: implemented
+
+  scalability:
+    description: System scalability targets
+    requirements:
+      - id: SCALE-001
+        title: Concurrent users
+        target: "1,000+"
+        priority: P1
+        status: planned
+
+      - id: SCALE-002
+        title: Health samples per user
+        target: "100,000+"
+        priority: P1
+        status: implemented
+
+      - id: SCALE-003
+        title: Chat messages per session
+        target: "1,000+"
+        priority: P2
+        status: implemented
+
+  availability:
+    description: System availability targets
+    requirements:
+      - id: AVAIL-001
+        title: API uptime
+        target: "99.9%"
+        priority: P0
+        status: partial
+
+      - id: AVAIL-002
+        title: Redis fallback
+        description: Graceful degradation when Redis unavailable
+        priority: P1
+        status: implemented
+
+      - id: AVAIL-003
+        title: Offline mode
+        description: Offline mode for mobile app
+        priority: P2
+        status: not_started
+
+  security:
+    description: Security requirements
+    requirements:
+      - id: SEC-001
+        title: JWT authentication
+        priority: P0
+        status: implemented
+
+      - id: SEC-002
+        title: Password hashing
+        description: bcrypt with salt
+        priority: P0
+        status: implemented
+
+      - id: SEC-003
+        title: Token blacklisting
+        description: Token blacklisting on logout
+        priority: P1
+        status: implemented
+
+      - id: SEC-004
+        title: Secure storage
+        description: flutter_secure_storage for API keys
+        priority: P0
+        status: implemented
+
+      - id: SEC-005
+        title: HTTPS enforcement
+        priority: P0
+        status: implemented
+
+      - id: SEC-006
+        title: Security headers
+        description: CSP, X-Frame-Options, HSTS
+        priority: P1
+        status: implemented
+
+      - id: SEC-007
+        title: Rate limiting
+        description: Rate limiting on auth endpoints
+        priority: P1
+        status: implemented
+
+future_requirements:
+  description: Planned features not yet implemented
+  requirements:
+    - id: FUTURE-001
+      title: Offline mode
+      description: Local data persistence when offline
+      priority: P1
+      status: not_started
+
+    - id: FUTURE-002
+      title: Push notifications
+      description: Workout reminders, goal updates
+      priority: P1
+      status: not_started
+
+    - id: FUTURE-003
+      title: Meal planning
+      description: AI-generated meal plans
+      priority: P2
+      status: partial
+      notes: Stub exists in backend
+
+    - id: FUTURE-004
+      title: Social features
+      description: Share workouts, challenges
+      priority: P3
+      status: not_started
+
+    - id: FUTURE-005
+      title: Direct wearable sync
+      description: Garmin/Fitbit integration
+      priority: P2
+      status: not_started
+
+    - id: FUTURE-006
+      title: Training programs
+      description: Multi-week structured programs
+      priority: P2
+      status: not_started
+
+    - id: FUTURE-007
+      title: Progress photos
+      description: Visual progress tracking
+      priority: P3
+      status: not_started
+
+    - id: FUTURE-008
+      title: Data export
+      description: Export health/workout history
+      priority: P2
+      status: not_started
