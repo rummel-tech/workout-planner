@@ -1,0 +1,173 @@
+# Workout Planner - Test Plan
+# Scope: Onboarding
+# Version: 1.0
+# Generated: 2024-12-24
+
+metadata:
+  project: Workout Planner
+  scope: onboarding
+  version: "1.0"
+  last_updated: "2025-12-29"
+
+onboarding:
+  test_cases:
+  - id: TC-ONBOARD-001
+    requirement: ONBOARD-001
+    title: Capture profile and add to waitlist
+    steps:
+    - Open app as new user
+    - Complete profile form (name, email, goals)
+    - Submit without registration code
+    expected:
+    - User profile saved
+    - User placed on waitlist
+    - Confirmation message displayed
+    status: functional
+
+  - id: TC-ONBOARD-002
+    requirement: ONBOARD-001
+    title: Admin assigns registration code
+    steps:
+    - Admin generates a registration code for waitlisted user
+    - System sends code email to user
+    expected:
+    - Code persisted and linked to user email
+    - Email delivered with code
+    status: functional
+
+  - id: TC-ONBOARD-003
+    requirement: ONBOARD-002
+    title: Complete registration with code
+    steps:
+    - User opens registration screen
+    - Enters valid code, email, and password
+    - Submits registration
+    expected:
+    - Code validated and marked used
+    - User account activated
+    - Access and refresh tokens issued
+    status: functional
+
+  - id: TC-ONBOARD-003A
+    requirement: ONBOARD-002
+    title: Registration code single-use enforcement
+    steps:
+    - Register with a valid code
+    - Attempt a second registration using the same code
+    expected:
+    - First registration succeeds and marks code used
+    - Second attempt is rejected and user is waitlisted
+    status: functional
+
+  - id: TC-ONBOARD-003B
+    requirement: ONBOARD-002
+    title: Registration with expired or invalid code
+    steps:
+    - Provide an expired or malformed registration code
+    - Submit registration
+    expected:
+    - Code rejected
+    - User is added to waitlist with clear messaging
+    status: functional
+
+  - id: TC-ONBOARD-004
+    requirement: ONBOARD-003
+    title: Configure AI provider
+    steps:
+    - Open settings → AI provider
+    - Select provider (OpenAI/Anthropic)
+    - Enter API key and save
+    expected:
+    - Provider selection persisted
+    - Key stored securely
+    - Test call succeeds (200)
+    status: functional
+
+  - id: TC-ONBOARD-004A
+    requirement: ONBOARD-003
+    title: AI provider invalid key handling
+    steps:
+    - Enter an invalid API key for selected provider
+    - Save configuration
+    expected:
+    - Save is rejected with actionable error
+    - Provider choice retained; key not stored
+    status: planned
+
+  - id: TC-ONBOARD-005
+    requirement: ONBOARD-004
+    title: Toggle HealthKit integration
+    steps:
+    - Open settings → Health integration
+    - Toggle HealthKit on/off
+    - Grant/deny permissions (iOS)
+    expected:
+    - Toggle state persisted
+    - Permission prompt shown on enable
+    - Health data sync respects toggle
+    status: functional
+
+  - id: TC-ONBOARD-005A
+    requirement: ONBOARD-004
+    title: HealthKit permission denied
+    steps:
+    - Enable HealthKit and deny permission in OS dialog
+    expected:
+    - App surfaces denial state
+    - Health sync remains disabled
+    - User prompted with remediation steps
+    status: planned
+
+  - id: TC-ONBOARD-006
+    requirement: ONBOARD-001
+    title: Duplicate waitlist email rejected
+    steps:
+    - Submit waitlist form with email A
+    - Resubmit waitlist form with same email A
+    expected:
+    - First submission succeeds
+    - Second submission returns duplicate error; no duplicate row created
+    status: functional
+
+  - id: TC-ONBOARD-007
+    requirement: ONBOARD-001
+    title: Waitlist rate limit (production profile)
+    steps:
+    - Submit more than 5 waitlist requests per minute from same IP in prod profile
+    expected:
+    - Requests beyond threshold are rate limited with 429
+    - No partial inserts occur for blocked requests
+    status: planned
+
+  - id: TC-ONBOARD-008
+    requirement: ONBOARD-002
+    title: Registration without code waitlists user
+    steps:
+    - Submit registration without code
+    expected:
+    - User added to waitlist and informed
+    - No user account created
+    status: functional
+
+  - id: TC-ONBOARD-009
+    requirement: ONBOARD-001
+    title: Admin invite removes from waitlist
+    steps:
+    - Add user to waitlist
+    - Admin issues invite (generate code) for that email
+    expected:
+    - Code generated and returned
+    - Waitlist entry removed
+    - Distribution metadata recorded
+    status: functional
+
+  - id: TC-ONBOARD-010
+    requirement: ONBOARD-002
+    title: Registration code validation endpoint
+    steps:
+    - Call /auth/validate-code with valid code
+    - Call with invalid/expired code
+    expected:
+    - Valid code returns valid=true
+    - Invalid/expired returns valid=false with message
+    status: functional

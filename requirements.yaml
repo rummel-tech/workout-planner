@@ -1,0 +1,406 @@
+# Workout Planner Flutter App - Requirements & Specifications
+# Source of truth for the Flutter mobile/web application
+
+metadata:
+  name: workout_planner
+  version: "0.0.1"
+  description: "AI-powered fitness coaching Flutter application for iOS, Android, and Web"
+  owner: Rummel Tech
+  repository: workout-planner/
+  deployed_url:
+    production: "https://workout-planner.rummeltech.com"
+    staging: "https://staging.workout-planner.rummeltech.com"
+
+technical_stack:
+  framework: Flutter 3.x
+  language: Dart >=2.17.0 <3.0.0
+  platforms:
+  - iOS
+  - Android
+  - Web
+  - macOS (experimental)
+  state_management: Provider / Riverpod
+  networking: HTTP / Dio
+  local_storage:
+  - flutter_secure_storage (tokens)
+  - shared_preferences (settings)
+  backend_api: workout-planner FastAPI service
+
+dependencies:
+  core_packages:
+  - flutter SDK
+  - shared_preferences ^2.2.2
+  - flutter_secure_storage ^9.2.4
+  - google_sign_in ^6.0.0
+  - logging ^1.2.0
+
+  custom_packages:
+    local:
+    - widgets (path: packages/widgets)
+    - goals_ui (path: packages/goals_ui)
+    - readiness_ui (path: packages/readiness_ui)
+    - home_dashboard_ui (path: packages/home_dashboard_ui)
+    - settings_profile_ui (path: packages/settings_profile_ui)
+    - todays_workout_ui (path: packages/todays_workout_ui)
+    - weekly_plan_ui (path: packages/weekly_plan_ui)
+    - ai_insights_ui (path: packages/ai_insights_ui)
+    external:
+    - rummel_blue_theme (git: rummel-tech/resources)
+
+  testing:
+  - flutter_test (SDK)
+  - integration_test (SDK)
+
+architecture:
+  pattern: Feature-based modular architecture
+  structure:
+  - lib/ - main.dart (entry point) - config/ (app configuration) - services/ (API clients, auth, storage) - src/ (UI screens and widgets)
+  - packages/ (modular UI features)
+  - test/ (unit and widget tests)
+  - integration_test/ (E2E tests)
+
+  modular_packages:
+  - widgets: Shared reusable widgets
+  - goals_ui: Goal management screens
+  - readiness_ui: Readiness score display
+  - home_dashboard_ui: Dashboard/home screen
+  - settings_profile_ui: Settings and profile
+  - todays_workout_ui: Today's workout view
+  - weekly_plan_ui: Weekly calendar view
+  - ai_insights_ui: AI coach chat interface
+
+features:
+  authentication:
+  - Email/password registration and login
+  - Google Sign-In (OAuth 2.0)
+  - Password reset flow
+  - Secure token storage (access + refresh tokens)
+  - Auto-refresh tokens
+  - Persistent login state
+
+  dashboard:
+    description: Daily overview screen
+    components:
+    - Today's date display
+    - Readiness score widget
+    - Today's scheduled workouts
+    - Quick actions (add workout, view week)
+    - Navigation to profile/settings
+    - Health metrics summary
+
+  weekly_planner:
+    description: 7-day workout calendar
+    features:
+    - Scrollable 7-day view
+    - Maximum 3 workouts per day (enforced)
+    - Day-level view with workout cards
+    - Edit day title, focus, description
+    - Time goals per day
+    - Drag-to-reorder workouts (future)
+    - Link workouts to goals
+
+  workout_management:
+    description: Create and edit workouts
+    features:
+    - Workout type selection
+    - Title and description
+    - Scheduled date/time
+    - Three-phase structure:
+      - Warmup exercises
+      - Main set exercises
+      - Cooldown exercises
+    - Exercise fields per exercise:
+      - Name
+      - Sets
+      - Reps
+      - Weight
+      - Duration
+      - Distance
+      - Rest time
+    - Mark as completed
+    - Notes field
+    workout_types:
+    - Strength
+    - Run
+    - Swim
+    - Murph
+    - Bike
+    - Yoga
+    - Cardio
+    - Mobility
+    - Rest
+
+  goals:
+    description: Goal tracking and management
+    features:
+    - Create fitness goals
+    - Set target dates
+    - Track progress (0-100%)
+    - Associate workouts with goals
+    - Mark goals as active/inactive
+    - Category-based organization
+
+  readiness:
+    description: Health-based readiness scoring
+    features:
+    - Daily readiness score (0-100)
+    - Health metric inputs:
+      - Sleep hours
+      - HRV (heart rate variability)
+      - Resting heart rate
+    - Historical readiness trends
+    - Integration with HealthKit (iOS/macOS)
+
+  health_integration:
+    platform: iOS and macOS only
+    framework: Apple HealthKit
+    data_synced:
+    - Sleep hours
+    - Heart rate variability (HRV)
+    - Resting heart rate
+    - Workout activities
+    permissions_required:
+    - Read health data
+    - Write workout data
+    note: Android Health Connect planned for future
+
+  ai_coach:
+    description: AI-powered chat coaching
+    features:
+    - Chat interface for fitness questions
+    - Personalized workout recommendations
+    - Context-aware responses (user data, goals, readiness)
+    - Workout plan suggestions
+    - Exercise form tips
+    backend: OpenAI GPT-4 via workout-planner API
+
+  profile_settings:
+    features:
+    - View/edit user profile
+    - Change password
+    - Notification preferences
+    - Theme selection
+    - Privacy settings
+    - Logout
+
+ui_ux:
+  design_system: Material Design 3
+  theme: Rummel Blue Theme (custom)
+  responsive: Yes (mobile-first)
+  accessibility:
+  - Screen reader support
+  - Semantic labels
+  - Sufficient contrast ratios
+  - Touch target sizes (min 48x48)
+  navigation:
+  - Bottom navigation bar (main sections)
+  - Contextual app bars
+  - Drawer for secondary navigation
+
+api_integration:
+  base_url:
+    development: "http://localhost:8000"
+    staging: "https://api-staging.workout-planner.rummeltech.com"
+    production: "https://api.workout-planner.rummeltech.com"
+
+  authentication:
+    type: JWT Bearer Token
+    storage: flutter_secure_storage
+    refresh: Automatic on 401 responses
+
+  endpoints_used:
+  - POST /auth/login
+  - POST /auth/register
+  - POST /auth/refresh
+  - GET /auth/me
+  - POST /auth/logout
+  - GET /daily-plans/{user_id}/{date}
+  - PUT /daily-plans/{user_id}/{date}
+  - GET /weekly-plans/{user_id}/{week_start}
+  - PUT /weekly-plans/{user_id}/{week_start}
+  - GET /workouts
+  - POST /workouts
+  - GET /workouts/{id}
+  - PUT /workouts/{id}
+  - DELETE /workouts/{id}
+  - GET /goals/{user_id}
+  - POST /goals/{user_id}
+  - PUT /goals/{user_id}/{goal_id}
+  - DELETE /goals/{user_id}/{goal_id}
+  - GET /readiness/{user_id}/{date}
+  - POST /readiness/{user_id}
+  - POST /chat
+
+  error_handling:
+  - Network errors with retry
+  - 401: Auto-refresh token
+  - 403: Navigate to login
+  - 500: Show error message
+  - Offline mode: Show cached data
+
+data_persistence:
+  secure_storage:
+  - Access token
+  - Refresh token
+  - User ID
+  shared_preferences:
+  - Theme preference
+  - Last viewed date
+  - Notification settings
+  cache:
+  - Recent workout plans (offline access)
+  - User profile
+  note: Full offline support planned for future
+
+deployment:
+  ios:
+    target: iOS 13+
+    distribution: App Store
+    signing: Apple Developer Program
+    capabilities:
+    - HealthKit
+    - Push Notifications (future)
+
+  android:
+    target: Android 8.0+ (API 26+)
+    distribution: Google Play Store
+    permissions:
+    - Internet access
+    - Health Connect (future)
+
+  web:
+    hosting: AWS S3 + CloudFront
+    build: flutter build web --release
+    deployment: GitHub Actions → S3
+    domain: workout-planner.rummeltech.com
+
+  ci_cd:
+    provider: GitHub Actions
+    workflows:
+    - Build and test on PR
+    - Deploy web on merge to main
+    - Build iOS/Android release candidates
+
+testing:
+  unit_tests:
+    location: test/
+    coverage_target: "> 70%"
+    framework: flutter_test
+
+  widget_tests:
+    location: test/
+    coverage: All custom widgets
+
+  integration_tests:
+    location: integration_test/
+    scenarios:
+    - Login flow
+    - Create workout plan
+    - Edit workout
+    - Add goal
+    - Chat with AI coach
+    devices:
+    - iOS Simulator
+    - Android Emulator
+    - Web Chrome
+
+performance:
+  startup_time: "< 2 seconds"
+  frame_rate: "60 FPS"
+  bundle_size:
+    ios: "< 50 MB"
+    android: "< 30 MB"
+    web: "< 5 MB (initial load)"
+  memory_usage: "< 100 MB average"
+
+security:
+  token_storage: Encrypted (flutter_secure_storage)
+  https_only: Enforced
+  certificate_pinning: Planned for future
+  biometric_auth: Planned for future
+  data_encryption: At rest and in transit
+
+accessibility:
+  wcag_compliance: AA level
+  features:
+  - Screen reader support
+  - High contrast mode
+  - Font size adjustment
+  - Keyboard navigation (web)
+
+localization:
+  current: English only
+  planned:
+  - Spanish
+  - French
+  - German
+
+analytics:
+  planned:
+  - Google Analytics (web)
+  - Firebase Analytics (mobile)
+  events_tracked:
+  - User registration
+  - Workout creation
+  - Goal completion
+  - AI chat usage
+  - Screen views
+
+push_notifications:
+  status: Planned
+  use_cases:
+  - Workout reminders
+  - Goal milestones
+  - Readiness alerts
+  - AI coaching tips
+  provider: Firebase Cloud Messaging
+
+known_limitations:
+- HealthKit iOS/macOS only (Android Health Connect TBD)
+- No offline workout editing (cache read-only)
+- Single user per device
+- No social/sharing features yet
+
+future_enhancements:
+  planned:
+  - Offline-first architecture with sync
+  - Android Health Connect integration
+  - Biometric authentication
+  - Push notifications
+  - Social features (share workouts)
+  - Video exercise library
+  - Dark mode
+  - Tablet-optimized layouts
+  under_consideration:
+  - Wearable app (Apple Watch, Wear OS)
+  - Multi-user support (coach/client)
+  - Live workout tracking
+  - Group challenges
+  - Nutrition tracking integration
+
+development:
+  prerequisites:
+  - Flutter SDK 3.x
+  - Dart SDK >=2.17.0
+  - Xcode (for iOS)
+  - Android Studio (for Android)
+
+  setup:
+  - flutter pub get
+  - Configure API endpoint in config
+  - For iOS: pod install in ios/
+
+  run:
+  - flutter run (development)
+  - flutter run -d chrome (web)
+  - flutter run -d iPhone (iOS)
+
+  build:
+  - flutter build ios --release
+  - flutter build appbundle --release
+  - flutter build web --release
+
+  quality_tools:
+  - flutter analyze
+  - dart format lib/ test/
+  - flutter test --coverage
