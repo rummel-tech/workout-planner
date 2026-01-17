@@ -12,15 +12,17 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
   final _codeFormKey = GlobalKey<FormState>();
   final _detailsFormKey = GlobalKey<FormState>();
+  final _waitlistFormKey = GlobalKey<FormState>();
   final _registrationCodeController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _fullNameController = TextEditingController();
+  final _waitlistEmailController = TextEditingController();
   final _authService = AuthService();
   final _secureConfig = SecureConfigService();
 
-  // Step 1: Code validation, Step 2: User details
+  // Step 1: Code validation, Step 2: User details, Step 0: Waitlist
   int _currentStep = 1;
   bool _isLoading = false;
   String? _errorMessage;
@@ -28,6 +30,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
   String? _validatedCode;
+  bool _showWaitlistForm = false;
 
   @override
   void dispose() {
@@ -36,6 +39,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     _fullNameController.dispose();
+    _waitlistEmailController.dispose();
     super.dispose();
   }
 
@@ -115,17 +119,64 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _currentStep = 1;
       _validatedCode = null;
       _errorMessage = null;
+      _showWaitlistForm = false;
     });
+  }
+
+  void _toggleWaitlistForm() {
+    setState(() {
+      _showWaitlistForm = !_showWaitlistForm;
+      _errorMessage = null;
+      _successMessage = null;
+    });
+  }
+
+  Future<void> _handleJoinWaitlist() async {
+    if (!_waitlistFormKey.currentState!.validate()) return;
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+      _successMessage = null;
+    });
+
+    try {
+      final result = await _authService.joinWaitlist(
+        _waitlistEmailController.text.trim(),
+      );
+
+      if (mounted) {
+        setState(() {
+          _successMessage = result['message'] ?? 'You have been added to the waitlist!';
+          _isLoading = false;
+          _waitlistEmailController.clear();
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString().replaceAll('Exception: ', '');
+        _isLoading = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    Widget content;
+    if (_showWaitlistForm) {
+      content = _buildWaitlistForm();
+    } else if (_currentStep == 1) {
+      content = _buildCodeStep();
+    } else {
+      content = _buildDetailsStep();
+    }
+
     return Scaffold(
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
-            child: _currentStep == 1 ? _buildCodeStep() : _buildDetailsStep(),
+            child: content,
           ),
         ),
       ),
@@ -201,6 +252,121 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 : const Text('Validate Code', style: TextStyle(fontSize: 16)),
           ),
           const SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text('Already have an account? '),
+              TextButton(
+                onPressed: _isLoading
+                    ? null
+                    : () => Navigator.of(context).pushReplacementNamed('/login'),
+                child: const Text('Login'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                "Don't have a code? ",
+                style: TextStyle(color: Colors.grey.shade600),
+              ),
+              TextButton(
+                onPressed: _isLoading ? null : _toggleWaitlistForm,
+                child: const Text('Join Waitlist'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWaitlistForm() {
+    return Form(
+      key: _waitlistFormKey,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Icon(
+            Icons.mail_outline,
+            size: 80,
+            color: Theme.of(context).primaryColor,
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'Join Our Waitlist',
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Enter your email to join the waitlist. We\'ll send you a registration code when a spot opens up.',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Colors.grey.shade600,
+                ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 48),
+          TextFormField(
+            controller: _waitlistEmailController,
+            keyboardType: TextInputType.emailAddress,
+            decoration: const InputDecoration(
+              labelText: 'Email Address',
+              prefixIcon: Icon(Icons.email_outlined),
+              border: OutlineInputBorder(),
+              hintText: 'you@example.com',
+            ),
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return 'Please enter your email address';
+              }
+              if (!value.contains('@') || !value.contains('.')) {
+                return 'Please enter a valid email address';
+              }
+              return null;
+            },
+            enabled: !_isLoading,
+            onFieldSubmitted: (_) => _handleJoinWaitlist(),
+          ),
+          if (_successMessage != null) ...[
+            const SizedBox(height: 16),
+            _buildSuccessMessage(_successMessage!),
+          ],
+          if (_errorMessage != null) ...[
+            const SizedBox(height: 16),
+            _buildErrorMessage(_errorMessage!),
+          ],
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: _isLoading ? null : _handleJoinWaitlist,
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+            ),
+            child: _isLoading
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Text('Join Waitlist', style: TextStyle(fontSize: 16)),
+          ),
+          const SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text('Have a registration code? '),
+              TextButton(
+                onPressed: _isLoading ? null : _toggleWaitlistForm,
+                child: const Text('Enter Code'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

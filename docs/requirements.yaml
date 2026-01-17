@@ -22,9 +22,14 @@ functional_requirements:
     requirements:
     - id: ONBOARD-001
       title: Join waiting list. New users register by completing a profile.
-      description: When a new user navigates to the site the are able to complete a profile. Admins will assign a registration code to the user and the code will be emailed to the user
+      description: When a new user navigates to the site they can join the waitlist by entering their email address. The email is persisted to the database. Admins can then assign a registration code to the user which will be emailed to them.
       priority: P0
       status: implemented
+      implementation_notes: |
+        Backend: POST /waitlist endpoint (routers/waitlist.py)
+        Frontend: "Join Waitlist" form on RegisterScreen (packages/home_dashboard_ui/lib/screens/register_screen.dart)
+        Database: waitlist table with id, email (unique), created_at
+        Tests: test_waitlist_join_success, test_waitlist_duplicate_rejected in tests/test_auth.py
 
     - id: ONBOARD-002
       title: Register a new user

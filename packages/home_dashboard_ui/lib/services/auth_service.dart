@@ -427,6 +427,38 @@ class AuthService {
     }
   }
 
+  /// Join the waitlist with an email address
+  ///
+  /// Backend accepts `POST $baseUrl/waitlist` with `{ email }` and
+  /// returns 201 on success or 400 if email already exists.
+  Future<Map<String, dynamic>> joinWaitlist(String email) async {
+    final uri = Uri.parse('$baseUrl/waitlist');
+    try {
+      final resp = await http.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'email': email}),
+      ).timeout(timeout);
+
+      if (resp.statusCode == 201) {
+        return json.decode(resp.body);
+      } else if (resp.statusCode == 400) {
+        final body = json.decode(resp.body);
+        throw Exception(body['detail'] ?? 'Email already on waitlist');
+      } else {
+        throw Exception('Failed to join waitlist');
+      }
+    } on TimeoutException {
+      throw Exception('Request timed out');
+    } catch (e) {
+      if (e.toString().contains('Failed host lookup') ||
+          e.toString().contains('Connection refused')) {
+        throw Exception('Backend unreachable');
+      }
+      rethrow;
+    }
+  }
+
   /// Request a password reset email to be sent to [email].
   ///
   /// Backend should accept `POST $baseUrl/auth/forgot` with `{ email }` and
