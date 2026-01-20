@@ -61,6 +61,7 @@ The application provides a planning tool to plan a week's worth of workouts. It 
 
 ## Documentation
 
+- [Objectives](./OBJECTIVES.md) - Goals, requirements, and success criteria
 - [Development Guide](docs/DEVELOPMENT.md) - Setup, building, testing, and deployment
 - [Architecture](docs/ARCHITECTURE.md) - System design and component overview
 - [Health Integration](docs/HEALTH_INTEGRATION.md) - Apple HealthKit setup
