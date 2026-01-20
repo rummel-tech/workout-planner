@@ -65,3 +65,8 @@ The application provides a planning tool to plan a week's worth of workouts. It 
 - [Architecture](docs/ARCHITECTURE.md) - System design and component overview
 - [Health Integration](docs/HEALTH_INTEGRATION.md) - Apple HealthKit setup
 - [Documentation Index](docs/INDEX.md) - Full documentation listing
+- [Changelog](./CHANGELOG.md) - Version history
+
+---
+
+[Platform Documentation](../../../docs/) | [Product Overview](../../../docs/products/workout-planner.md)
