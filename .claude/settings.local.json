@@ -7,7 +7,10 @@
       "Bash(flutter analyze:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(flutter pub get:*)"
+      "Bash(flutter pub get:*)",
+      "Bash(flutter run:*)",
+      "Bash(source:*)",
+      "Bash(uvicorn main:app:*)"
     ]
   }
 }
