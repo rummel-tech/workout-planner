@@ -3,6 +3,9 @@ import 'dart:io';
 import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:home_dashboard_ui/services/api_config.dart';
+import '../models/health_sample.dart';
+
+export '../models/health_sample.dart';
 
 class HealthApiService {
   final String baseUrl;
@@ -14,6 +17,12 @@ class HealthApiService {
   }) : baseUrl = baseUrl ?? ApiConfig.baseUrl,
        timeout = timeout ?? ApiConfig.defaultTimeout;
 
+  /// Ingest typed HealthSample objects
+  Future<int> ingestSamplesTyped(List<HealthSample> samples) async {
+    return ingestSamples(samples.map((s) => s.toIngestJson()).toList());
+  }
+
+  /// Ingest raw sample maps (backward compatibility)
   Future<int> ingestSamples(List<Map<String, dynamic>> samples) async {
     if (samples.isEmpty) return 0;
     try {
@@ -37,6 +46,13 @@ class HealthApiService {
     }
   }
 
+  /// List health samples as typed HealthSample objects
+  Future<List<HealthSample>> listSamplesTyped(String userId, {String? sampleType, int limit = 100}) async {
+    final rawSamples = await listSamples(userId, sampleType: sampleType, limit: limit);
+    return rawSamples.map((json) => HealthSample.fromJson(json)).toList();
+  }
+
+  /// List health samples as raw maps (backward compatibility)
   Future<List<Map<String, dynamic>>> listSamples(String userId, {String? sampleType, int limit = 100}) async {
     final params = {
       'user_id': userId,

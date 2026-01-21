@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/metrics_api_service.dart';
 
 class SwimMetricsScreen extends StatefulWidget {
   final String userId;
@@ -11,13 +12,17 @@ class SwimMetricsScreen extends StatefulWidget {
 
 class _SwimMetricsScreenState extends State<SwimMetricsScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _metricsApi = MetricsApiService();
   DateTime _selectedDate = DateTime.now();
-  
+  bool _isSaving = false;
+  bool _isLoadingHistory = false;
+  List<SwimMetrics> _historyMetrics = [];
+
   final _distanceController = TextEditingController();
   final _avgPaceController = TextEditingController();
   final _strokeRateController = TextEditingController();
-  
-  String _waterType = 'pool';
+
+  String _waterType = SwimMetrics.waterTypePool;
 
   @override
   void dispose() {
@@ -30,22 +35,36 @@ class _SwimMetricsScreenState extends State<SwimMetricsScreen> {
   String _formatPace() {
     final paceSeconds = double.tryParse(_avgPaceController.text);
     if (paceSeconds != null) {
-      final minutes = (paceSeconds / 60).floor();
-      final seconds = (paceSeconds % 60).round();
-      return '${minutes}:${seconds.toString().padLeft(2, '0')} / 100m';
+      return SwimMetrics.formatPace(paceSeconds);
     }
     return '';
+  }
+
+  String _calculateTotalTime() {
+    final distance = double.tryParse(_distanceController.text);
+    final pace = double.tryParse(_avgPaceController.text);
+    if (distance != null && pace != null) {
+      final totalSeconds = SwimMetrics.calculateDuration(distance, pace);
+      return SwimMetrics.formatDuration(totalSeconds);
+    }
+    return '0:00';
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Swim Metrics'),
+        title: const Text('Log Swim'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.history),
-            onPressed: () => _showHistory(),
+            icon: _isLoadingHistory
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.history),
+            onPressed: _isLoadingHistory ? null : _showHistory,
           ),
         ],
       ),
@@ -60,13 +79,15 @@ class _SwimMetricsScreenState extends State<SwimMetricsScreen> {
                 child: ListTile(
                   leading: const Icon(Icons.calendar_today),
                   title: const Text('Date'),
-                  subtitle: Text('${_selectedDate.month}/${_selectedDate.day}/${_selectedDate.year}'),
+                  subtitle: Text(
+                      '${_selectedDate.month}/${_selectedDate.day}/${_selectedDate.year}'),
                   trailing: const Icon(Icons.arrow_drop_down),
                   onTap: () async {
                     final picked = await showDatePicker(
                       context: context,
                       initialDate: _selectedDate,
-                      firstDate: DateTime.now().subtract(const Duration(days: 365)),
+                      firstDate:
+                          DateTime.now().subtract(const Duration(days: 365)),
                       lastDate: DateTime.now(),
                     );
                     if (picked != null) {
@@ -76,13 +97,12 @@ class _SwimMetricsScreenState extends State<SwimMetricsScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-
               Row(
                 children: [
                   Expanded(
                     child: RadioListTile<String>(
                       title: const Text('Pool'),
-                      value: 'pool',
+                      value: SwimMetrics.waterTypePool,
                       groupValue: _waterType,
                       onChanged: (val) => setState(() => _waterType = val!),
                     ),
@@ -90,7 +110,7 @@ class _SwimMetricsScreenState extends State<SwimMetricsScreen> {
                   Expanded(
                     child: RadioListTile<String>(
                       title: const Text('Open Water'),
-                      value: 'open_water',
+                      value: SwimMetrics.waterTypeOpenWater,
                       groupValue: _waterType,
                       onChanged: (val) => setState(() => _waterType = val!),
                     ),
@@ -98,7 +118,6 @@ class _SwimMetricsScreenState extends State<SwimMetricsScreen> {
                 ],
               ),
               const SizedBox(height: 16),
-
               TextFormField(
                 controller: _distanceController,
                 keyboardType: TextInputType.number,
@@ -108,9 +127,9 @@ class _SwimMetricsScreenState extends State<SwimMetricsScreen> {
                   helperText: 'e.g., 1000 for 1km',
                 ),
                 validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                onChanged: (_) => setState(() {}),
               ),
               const SizedBox(height: 16),
-
               TextFormField(
                 controller: _avgPaceController,
                 keyboardType: TextInputType.number,
@@ -123,7 +142,6 @@ class _SwimMetricsScreenState extends State<SwimMetricsScreen> {
                 onChanged: (_) => setState(() {}),
               ),
               const SizedBox(height: 16),
-
               TextFormField(
                 controller: _strokeRateController,
                 keyboardType: TextInputType.number,
@@ -133,18 +151,23 @@ class _SwimMetricsScreenState extends State<SwimMetricsScreen> {
                   border: OutlineInputBorder(),
                 ),
               ),
-              
               const SizedBox(height: 20),
-
-              if (_distanceController.text.isNotEmpty && _avgPaceController.text.isNotEmpty)
+              if (_distanceController.text.isNotEmpty &&
+                  _avgPaceController.text.isNotEmpty)
                 Card(
-                  color: Colors.blue.shade50,
+                  color: Theme.of(context).colorScheme.primaryContainer,
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Workout Summary', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                        Text('Workout Summary',
+                            style: TextStyle(
+                                fontSize: 12,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onPrimaryContainer
+                                    .withOpacity(0.7))),
                         const SizedBox(height: 8),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -152,25 +175,44 @@ class _SwimMetricsScreenState extends State<SwimMetricsScreen> {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('Distance', style: TextStyle(fontSize: 11)),
-                                Text('${double.tryParse(_distanceController.text)?.toStringAsFixed(0) ?? '0'}m', 
-                                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                                const Text('Distance',
+                                    style: TextStyle(fontSize: 11)),
+                                Text(
+                                    '${double.tryParse(_distanceController.text)?.toStringAsFixed(0) ?? '0'}m',
+                                    style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onPrimaryContainer)),
                               ],
                             ),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('Pace', style: TextStyle(fontSize: 11)),
-                                Text(_formatPace(), 
-                                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                                const Text('Pace',
+                                    style: TextStyle(fontSize: 11)),
+                                Text(_formatPace(),
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onPrimaryContainer)),
                               ],
                             ),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('Total Time', style: TextStyle(fontSize: 11)),
-                                Text(_calculateTotalTime(), 
-                                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                                const Text('Total Time',
+                                    style: TextStyle(fontSize: 11)),
+                                Text(_calculateTotalTime(),
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onPrimaryContainer)),
                               ],
                             ),
                           ],
@@ -179,15 +221,19 @@ class _SwimMetricsScreenState extends State<SwimMetricsScreen> {
                     ),
                   ),
                 ),
-              
               const SizedBox(height: 20),
-
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: _saveMetrics,
-                  icon: const Icon(Icons.save),
-                  label: const Text('Log Swim'),
+                  onPressed: _isSaving ? null : _saveMetrics,
+                  icon: _isSaving
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.save),
+                  label: Text(_isSaving ? 'Saving...' : 'Log Swim'),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.all(16),
                   ),
@@ -200,66 +246,141 @@ class _SwimMetricsScreenState extends State<SwimMetricsScreen> {
     );
   }
 
-  String _calculateTotalTime() {
-    final distance = double.tryParse(_distanceController.text);
-    final pace = double.tryParse(_avgPaceController.text);
-    if (distance != null && pace != null) {
-      final totalSeconds = (distance / 100) * pace;
-      final minutes = (totalSeconds / 60).floor();
-      final seconds = (totalSeconds % 60).round();
-      return '${minutes}:${seconds.toString().padLeft(2, '0')}';
-    }
-    return '0:00';
-  }
+  Future<void> _saveMetrics() async {
+    if (!_formKey.currentState!.validate()) return;
 
-  void _saveMetrics() {
-    if (_formKey.currentState!.validate()) {
-      final metrics = {
-        'user_id': widget.userId,
-        'date': '${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}',
-        'distance_meters': double.parse(_distanceController.text),
-        'avg_pace_seconds': double.parse(_avgPaceController.text),
-        'stroke_rate': _strokeRateController.text.isNotEmpty ? double.tryParse(_strokeRateController.text) : null,
-        'water_type': _waterType,
-      };
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Swim logged successfully!')),
+    setState(() => _isSaving = true);
+
+    try {
+      final distance = double.parse(_distanceController.text);
+      final pace = double.parse(_avgPaceController.text);
+      final duration = SwimMetrics.calculateDuration(distance, pace);
+
+      final metrics = SwimMetrics(
+        userId: widget.userId,
+        date: _selectedDate,
+        distanceMeters: distance,
+        durationSeconds: duration,
+        avgPaceSeconds: pace,
+        waterType: _waterType,
+        strokeRate: _strokeRateController.text.isNotEmpty
+            ? double.tryParse(_strokeRateController.text)
+            : null,
       );
 
-      _distanceController.clear();
-      _avgPaceController.clear();
-      _strokeRateController.clear();
+      await _metricsApi.logSwim(metrics);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                'Logged ${distance.toStringAsFixed(0)}m swim - ${SwimMetrics.formatDuration(duration)}'),
+          ),
+        );
+
+        _distanceController.clear();
+        _avgPaceController.clear();
+        _strokeRateController.clear();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                'Failed to save: ${e.toString().replaceAll('Exception: ', '')}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
     }
   }
 
-  void _showHistory() {
+  Future<void> _showHistory() async {
+    setState(() => _isLoadingHistory = true);
+
+    try {
+      final metrics = await _metricsApi.getSwimMetrics(widget.userId);
+      setState(() {
+        _historyMetrics = metrics;
+        _isLoadingHistory = false;
+      });
+    } catch (e) {
+      setState(() => _isLoadingHistory = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                'Failed to load history: ${e.toString().replaceAll('Exception: ', '')}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
+    if (!mounted) return;
+
     showModalBottomSheet(
       context: context,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            const Text('Recent Swims', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 16),
-            Expanded(
-              child: ListView.builder(
-                itemCount: 5,
-                itemBuilder: (context, index) {
-                  return Card(
-                    child: ListTile(
-                      leading: const Icon(Icons.pool),
-                      title: Text('${1000 + index * 200}m swim'),
-                      subtitle: Text('1:${45 + index * 2}/100m • ${20 + index} min'),
-                      trailing: Text('11/${15 - index}/2025', style: const TextStyle(fontSize: 11)),
-                    ),
-                  );
-                },
+      isScrollControlled: true,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        minChildSize: 0.3,
+        maxChildSize: 0.9,
+        expand: false,
+        builder: (context, scrollController) => Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              const Text('Recent Swims',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 16),
+              Expanded(
+                child: _historyMetrics.isEmpty
+                    ? const Center(child: Text('No swim metrics recorded yet'))
+                    : ListView.builder(
+                        controller: scrollController,
+                        itemCount: _historyMetrics.length,
+                        itemBuilder: (context, index) {
+                          final m = _historyMetrics[index];
+                          return Card(
+                            child: ListTile(
+                              leading: const Icon(Icons.pool),
+                              title: Text(
+                                  '${m.distanceMeters.toStringAsFixed(0)}m swim'),
+                              subtitle: Text(
+                                  '${m.paceDisplay} - ${m.durationDisplay}'),
+                              trailing: Text(
+                                '${m.date.month}/${m.date.day}',
+                                style: const TextStyle(fontSize: 11),
+                              ),
+                              onTap: () => _loadMetricsEntry(m),
+                            ),
+                          );
+                        },
+                      ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  void _loadMetricsEntry(SwimMetrics m) {
+    setState(() {
+      _selectedDate = m.date;
+      _distanceController.text = m.distanceMeters.toStringAsFixed(0);
+      _avgPaceController.text = m.avgPaceSeconds.toStringAsFixed(0);
+      _waterType = m.waterType;
+      if (m.strokeRate != null) {
+        _strokeRateController.text = m.strokeRate.toString();
+      }
+    });
+    Navigator.pop(context);
   }
 }

@@ -1,5 +1,5 @@
-name: todays_workout_ui
-description: Today's workout screen package
+name: health_integration
+description: Health data integration with HealthKit/Google Fit
 version: 0.0.1
 environment:
   sdk: ">=2.17.0 <3.0.0"
@@ -10,10 +10,6 @@ dependencies:
   http: ^1.1.0
   home_dashboard_ui:
     path: ../home_dashboard_ui
-
-dev_dependencies:
-  flutter_test:
-    sdk: flutter
 
 flutter:
   plugin:

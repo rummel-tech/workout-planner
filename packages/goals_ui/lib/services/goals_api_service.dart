@@ -2,6 +2,9 @@ import 'dart:convert';
 import 'dart:async';
 import 'dart:io';
 import 'package:home_dashboard_ui/services/auth_service.dart';
+import '../models/goal_plan.dart';
+
+export '../models/goal_plan.dart';
 
 class GoalsApiService {
   final AuthService _authService;
@@ -32,7 +35,13 @@ class GoalsApiService {
     }
   }
 
-  // Get plans for a specific goal
+  /// Get plans for a specific goal as typed GoalPlan objects
+  Future<List<GoalPlan>> getPlansTyped(int goalId, String userId) async {
+    final rawPlans = await getPlans(goalId, userId);
+    return rawPlans.map((json) => GoalPlan.fromJson(json)).toList();
+  }
+
+  // Get plans for a specific goal (raw Map for backward compatibility)
   Future<List<Map<String, dynamic>>> getPlans(int goalId, String userId) async {
     try {
       final response = await _authService.authenticatedRequest(
@@ -54,7 +63,13 @@ class GoalsApiService {
     }
   }
 
-  // Create a new plan for a goal
+  /// Create a new plan for a goal and return typed GoalPlan
+  Future<GoalPlan> createPlanTyped(int goalId, String userId, String name, String description) async {
+    final rawPlan = await createPlan(goalId, userId, name, description);
+    return GoalPlan.fromJson(rawPlan);
+  }
+
+  // Create a new plan for a goal (raw Map for backward compatibility)
   Future<Map<String, dynamic>> createPlan(int goalId, String userId, String name, String description) async {
     try {
       final response = await _authService.authenticatedRequest(
@@ -78,7 +93,13 @@ class GoalsApiService {
     }
   }
 
-  // Update an existing plan
+  /// Update an existing plan and return typed GoalPlan
+  Future<GoalPlan> updatePlanTyped(int planId, String name, String description) async {
+    final rawPlan = await updatePlan(planId, name, description);
+    return GoalPlan.fromJson(rawPlan);
+  }
+
+  // Update an existing plan (raw Map for backward compatibility)
   Future<Map<String, dynamic>> updatePlan(int planId, String name, String description) async {
     try {
       final response = await _authService.authenticatedRequest(

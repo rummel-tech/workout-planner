@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:health_integration/services/health_api_service.dart';
 
 class HealthMetricsScreen extends StatefulWidget {
   final String userId;
@@ -11,14 +12,18 @@ class HealthMetricsScreen extends StatefulWidget {
 
 class _HealthMetricsScreenState extends State<HealthMetricsScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _healthApi = HealthApiService();
   DateTime _selectedDate = DateTime.now();
-  
+  bool _isSaving = false;
+  bool _isLoadingHistory = false;
+  List<HealthSample> _historySamples = [];
+
   final _hrvController = TextEditingController();
   final _restingHrController = TextEditingController();
   final _vo2maxController = TextEditingController();
   final _sleepHoursController = TextEditingController();
   final _weightKgController = TextEditingController();
-  
+
   int _rpe = 5;
   int _soreness = 5;
   int _mood = 5;
@@ -40,8 +45,14 @@ class _HealthMetricsScreenState extends State<HealthMetricsScreen> {
         title: const Text('Daily Health Metrics'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.history),
-            onPressed: () => _showHistory(),
+            icon: _isLoadingHistory
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.history),
+            onPressed: _isLoadingHistory ? null : _showHistory,
           ),
         ],
       ),
@@ -163,9 +174,15 @@ class _HealthMetricsScreenState extends State<HealthMetricsScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: _saveMetrics,
-                  icon: const Icon(Icons.save),
-                  label: const Text('Save Metrics'),
+                  onPressed: _isSaving ? null : _saveMetrics,
+                  icon: _isSaving
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.save),
+                  label: Text(_isSaving ? 'Saving...' : 'Save Metrics'),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.all(16),
                   ),
@@ -215,60 +232,270 @@ class _HealthMetricsScreenState extends State<HealthMetricsScreen> {
     );
   }
 
-  void _saveMetrics() {
-    if (_formKey.currentState!.validate()) {
-      // TODO: Call API to save metrics
-      final metrics = {
-        'user_id': widget.userId,
-        'date': '${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}',
-        'hrv_ms': _hrvController.text.isNotEmpty ? double.tryParse(_hrvController.text) : null,
-        'resting_hr': _restingHrController.text.isNotEmpty ? int.tryParse(_restingHrController.text) : null,
-        'vo2max': _vo2maxController.text.isNotEmpty ? double.tryParse(_vo2maxController.text) : null,
-        'sleep_hours': _sleepHoursController.text.isNotEmpty ? double.tryParse(_sleepHoursController.text) : null,
-        'weight_kg': _weightKgController.text.isNotEmpty ? double.tryParse(_weightKgController.text) : null,
-        'rpe': _rpe,
-        'soreness': _soreness,
-        'mood': _mood,
-      };
-      
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Health metrics saved!')),
-      );
+  Future<void> _saveMetrics() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isSaving = true);
+
+    try {
+      final samples = <HealthSample>[];
+      final startTime = DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day);
+
+      // Add physical metrics as health samples
+      if (_hrvController.text.isNotEmpty) {
+        final value = double.tryParse(_hrvController.text);
+        if (value != null) {
+          samples.add(HealthSample(
+            userId: widget.userId,
+            sampleType: HealthSample.typeHrv,
+            value: value,
+            unit: 'ms',
+            startTime: startTime,
+            sourceApp: 'workout_planner',
+          ));
+        }
+      }
+
+      if (_restingHrController.text.isNotEmpty) {
+        final value = double.tryParse(_restingHrController.text);
+        if (value != null) {
+          samples.add(HealthSample(
+            userId: widget.userId,
+            sampleType: HealthSample.typeRestingHr,
+            value: value,
+            unit: 'bpm',
+            startTime: startTime,
+            sourceApp: 'workout_planner',
+          ));
+        }
+      }
+
+      if (_vo2maxController.text.isNotEmpty) {
+        final value = double.tryParse(_vo2maxController.text);
+        if (value != null) {
+          samples.add(HealthSample(
+            userId: widget.userId,
+            sampleType: HealthSample.typeVo2max,
+            value: value,
+            unit: 'mL/kg/min',
+            startTime: startTime,
+            sourceApp: 'workout_planner',
+          ));
+        }
+      }
+
+      if (_sleepHoursController.text.isNotEmpty) {
+        final value = double.tryParse(_sleepHoursController.text);
+        if (value != null) {
+          samples.add(HealthSample(
+            userId: widget.userId,
+            sampleType: HealthSample.typeSleepStage,
+            value: value,
+            unit: 'hours',
+            startTime: startTime,
+            sourceApp: 'workout_planner',
+          ));
+        }
+      }
+
+      if (_weightKgController.text.isNotEmpty) {
+        final value = double.tryParse(_weightKgController.text);
+        if (value != null) {
+          samples.add(HealthSample(
+            userId: widget.userId,
+            sampleType: HealthSample.typeWeight,
+            value: value,
+            unit: 'kg',
+            startTime: startTime,
+            sourceApp: 'workout_planner',
+          ));
+        }
+      }
+
+      // Add subjective ratings
+      samples.add(HealthSample(
+        userId: widget.userId,
+        sampleType: HealthSample.typeRpe,
+        value: _rpe.toDouble(),
+        unit: 'rating',
+        startTime: startTime,
+        sourceApp: 'workout_planner',
+      ));
+
+      samples.add(HealthSample(
+        userId: widget.userId,
+        sampleType: HealthSample.typeSoreness,
+        value: _soreness.toDouble(),
+        unit: 'rating',
+        startTime: startTime,
+        sourceApp: 'workout_planner',
+      ));
+
+      samples.add(HealthSample(
+        userId: widget.userId,
+        sampleType: HealthSample.typeMood,
+        value: _mood.toDouble(),
+        unit: 'rating',
+        startTime: startTime,
+        sourceApp: 'workout_planner',
+      ));
+
+      // Save to API
+      final inserted = await _healthApi.ingestSamplesTyped(samples);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Saved $inserted health metrics!')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to save: ${e.toString().replaceAll('Exception: ', '')}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
     }
   }
 
-  void _showHistory() {
+  Future<void> _showHistory() async {
+    setState(() => _isLoadingHistory = true);
+
+    try {
+      final samples = await _healthApi.listSamplesTyped(widget.userId, limit: 50);
+      setState(() {
+        _historySamples = samples;
+        _isLoadingHistory = false;
+      });
+    } catch (e) {
+      setState(() => _isLoadingHistory = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load history: ${e.toString().replaceAll('Exception: ', '')}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
+    if (!mounted) return;
+
+    // Group samples by date
+    final samplesByDate = <String, List<HealthSample>>{};
+    for (final sample in _historySamples) {
+      final dateKey = '${sample.startTime.year}-${sample.startTime.month.toString().padLeft(2, '0')}-${sample.startTime.day.toString().padLeft(2, '0')}';
+      samplesByDate.putIfAbsent(dateKey, () => []).add(sample);
+    }
+
+    final sortedDates = samplesByDate.keys.toList()..sort((a, b) => b.compareTo(a));
+
     showModalBottomSheet(
       context: context,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            const Text('Health Metrics History', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 16),
-            Expanded(
-              child: ListView.builder(
-                itemCount: 7,
-                itemBuilder: (context, index) {
-                  final date = DateTime.now().subtract(Duration(days: index));
-                  return Card(
-                    child: ListTile(
-                      leading: CircleAvatar(child: Text('${date.day}')),
-                      title: Text('${date.month}/${date.day}/${date.year}'),
-                      subtitle: const Text('HRV: 45ms • Sleep: 7.5h • RPE: 6'),
-                      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                      onTap: () {
-                        // TODO: Load metrics for this date
-                      },
-                    ),
-                  );
-                },
+      isScrollControlled: true,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        minChildSize: 0.3,
+        maxChildSize: 0.9,
+        expand: false,
+        builder: (context, scrollController) => Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              const Text('Health Metrics History', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 16),
+              Expanded(
+                child: sortedDates.isEmpty
+                    ? const Center(child: Text('No health metrics recorded yet'))
+                    : ListView.builder(
+                        controller: scrollController,
+                        itemCount: sortedDates.length,
+                        itemBuilder: (context, index) {
+                          final dateKey = sortedDates[index];
+                          final dateSamples = samplesByDate[dateKey]!;
+                          final date = DateTime.parse(dateKey);
+
+                          // Extract key metrics for display
+                          final hrvList = dateSamples.where((s) => s.sampleType == HealthSample.typeHrv);
+                          final hrv = hrvList.isEmpty ? null : hrvList.first;
+                          final sleepList = dateSamples.where((s) => s.sampleType == HealthSample.typeSleepStage);
+                          final sleep = sleepList.isEmpty ? null : sleepList.first;
+                          final rpeList = dateSamples.where((s) => s.sampleType == HealthSample.typeRpe);
+                          final rpe = rpeList.isEmpty ? null : rpeList.first;
+
+                          final summaryParts = <String>[];
+                          if (hrv != null) summaryParts.add('HRV: ${hrv.value.toStringAsFixed(0)}ms');
+                          if (sleep != null) summaryParts.add('Sleep: ${sleep.value.toStringAsFixed(1)}h');
+                          if (rpe != null) summaryParts.add('RPE: ${rpe.value.toStringAsFixed(0)}');
+
+                          return Card(
+                            child: ListTile(
+                              leading: CircleAvatar(child: Text('${date.day}')),
+                              title: Text('${date.month}/${date.day}/${date.year}'),
+                              subtitle: Text(summaryParts.isEmpty ? 'No data' : summaryParts.join(' • ')),
+                              trailing: Text('${dateSamples.length} metrics', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                              onTap: () => _loadMetricsForDate(date),
+                            ),
+                          );
+                        },
+                      ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  void _loadMetricsForDate(DateTime date) {
+    // Find samples for this date
+    final dateKey = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+    final dateSamples = _historySamples.where((s) {
+      final sampleDate = '${s.startTime.year}-${s.startTime.month.toString().padLeft(2, '0')}-${s.startTime.day.toString().padLeft(2, '0')}';
+      return sampleDate == dateKey;
+    }).toList();
+
+    // Populate form fields
+    setState(() {
+      _selectedDate = date;
+
+      for (final sample in dateSamples) {
+        switch (sample.sampleType) {
+          case HealthSample.typeHrv:
+            _hrvController.text = sample.value.toStringAsFixed(0);
+            break;
+          case HealthSample.typeRestingHr:
+            _restingHrController.text = sample.value.toStringAsFixed(0);
+            break;
+          case HealthSample.typeVo2max:
+            _vo2maxController.text = sample.value.toStringAsFixed(1);
+            break;
+          case HealthSample.typeSleepStage:
+            _sleepHoursController.text = sample.value.toStringAsFixed(1);
+            break;
+          case HealthSample.typeWeight:
+            _weightKgController.text = sample.value.toStringAsFixed(1);
+            break;
+          case HealthSample.typeRpe:
+            _rpe = sample.value.round();
+            break;
+          case HealthSample.typeSoreness:
+            _soreness = sample.value.round();
+            break;
+          case HealthSample.typeMood:
+            _mood = sample.value.round();
+            break;
+        }
+      }
+    });
+
+    Navigator.pop(context); // Close bottom sheet
   }
 }

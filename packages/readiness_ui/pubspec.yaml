@@ -7,6 +7,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  health_integration:
+    path: ../health_integration
 
 flutter:
   plugin:
