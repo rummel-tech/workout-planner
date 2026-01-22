@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../services/user_sync_service.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -9,18 +8,14 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  Map<String, dynamic>? settings;
-  bool loading = true;
+  Map<String, dynamic> settings = {"notifications": true};
+  bool loading = false;
 
   @override
   void initState() {
     super.initState();
-    load();
-  }
-
-  Future<void> load() async {
-    settings = await UserSyncService().fetchSettings();
-    setState(() => loading = false);
+    // Settings will be loaded from backend API in future update
+    // For now, using local state
   }
 
   @override
@@ -34,11 +29,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: [
           SwitchListTile(
             title: const Text("Enable Notifications"),
-            value: settings?["notifications"] ?? true,
+            subtitle: const Text("Settings sync coming soon"),
+            value: settings["notifications"] ?? true,
             onChanged: (v) {
-              UserSyncService().updateSettings({"notifications": v});
-              setState(() => settings?["notifications"] = v);
+              // TODO: Implement settings update API endpoint
+              setState(() => settings["notifications"] = v);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Settings saved locally")),
+              );
             },
+          ),
+          const Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Text(
+              "Note: Settings sync with backend coming in next update",
+              style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+              textAlign: TextAlign.center,
+            ),
           )
         ],
       ),

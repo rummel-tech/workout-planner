@@ -41,17 +41,59 @@ class Exercise {
     return json;
   }
 
+  /// Normalize weight unit to standard values
+  static String _normalizeWeightUnit(String? unit) {
+    if (unit == null || unit.isEmpty) return 'lbs';
+    final normalized = unit.toLowerCase().trim();
+
+    if (normalized == 'kg' || normalized == 'kgs' || normalized == 'kilogram' || normalized == 'kilograms') {
+      return 'kg';
+    }
+    if (normalized == 'lbs' || normalized == 'lb' || normalized == 'pound' || normalized == 'pounds') {
+      return 'lbs';
+    }
+
+    // Return as-is if already standard, default to lbs otherwise
+    return ['lbs', 'kg'].contains(normalized) ? normalized : 'lbs';
+  }
+
+  /// Normalize distance unit to standard values
+  static String _normalizeDistanceUnit(String? unit) {
+    if (unit == null || unit.isEmpty) return 'miles';
+    final normalized = unit.toLowerCase().trim();
+
+    if (normalized == 'mi' || normalized == 'mile' || normalized == 'miles') {
+      return 'miles';
+    }
+    if (normalized == 'km' || normalized == 'kilometer' || normalized == 'kilometers') {
+      return 'km';
+    }
+    if (normalized == 'm' || normalized == 'meter' || normalized == 'meters' || normalized == 'metre' || normalized == 'metres') {
+      return 'meters';
+    }
+    if (normalized == 'yd' || normalized == 'yard' || normalized == 'yards') {
+      return 'yards';
+    }
+    if (normalized == 'lap' || normalized == 'laps') {
+      return 'laps';
+    }
+
+    // Return as-is if already standard, default to miles otherwise
+    const validUnits = ['miles', 'km', 'meters', 'yards', 'laps'];
+    return validUnits.contains(normalized) ? normalized : 'miles';
+  }
+
   factory Exercise.fromJson(Map<String, dynamic> json) {
     return Exercise(
       name: json['name'] as String? ?? '',
       sets: json['sets'] as int?,
       reps: json['reps'] as int?,
       weight: (json['weight'] as num?)?.toDouble(),
-      weightUnit: json['weightUnit'] as String? ?? 'lbs',
+      weightUnit: _normalizeWeightUnit(json['weightUnit'] as String?),
       duration: json['duration'] as int?,
       rest: json['rest'] as int?,
       distance: (json['distance'] as num?)?.toDouble(),
-      distanceUnit: json['distanceUnit'] as String? ?? 'miles',
+      distanceUnit: _normalizeDistanceUnit(json['distanceUnit'] as String?),
       notes: json['notes'] as String?,
     );
   }

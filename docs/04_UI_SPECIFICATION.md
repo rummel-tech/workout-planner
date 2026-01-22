@@ -500,6 +500,143 @@ App Launch
 
 ---
 
+### Workout Detail Screen
+
+**Route:** (modal/push from Day Edit Screen)
+**Purpose:** View and edit a specific workout with exercises
+
+**Layout:**
+```
+┌─────────────────────────────────┐
+│  ← Push Day              💾    │
+├─────────────────────────────────┤
+│                                 │
+│  Workout Name                   │
+│  ┌─────────────────────────┐    │
+│  │ Push Day                │    │
+│  └─────────────────────────┘    │
+│                                 │
+│  Type                           │
+│  ┌─────────────────────────┐    │
+│  │ Strength            [▼] │    │
+│  └─────────────────────────┘    │
+│                                 │
+│  Focus                          │
+│  ┌─────────────────────────┐    │
+│  │ Chest and Shoulders     │    │
+│  └─────────────────────────┘    │
+│                                 │
+│  Time Goal                      │
+│  ┌─────────────────────────┐    │
+│  │ 60 minutes              │    │
+│  └─────────────────────────┘    │
+│                                 │
+│  EXERCISES                      │
+│  ┌─────────────────────────┐    │
+│  │ Bench Press             │    │
+│  │ 4 x 6 @ 185 lbs         │    │
+│  │                    [✏️]  │    │
+│  └─────────────────────────┘    │
+│  ┌─────────────────────────┐    │
+│  │ Overhead Press          │    │
+│  │ 3 x 8 @ 95 lbs          │    │
+│  │                    [✏️]  │    │
+│  └─────────────────────────┘    │
+│                                 │
+│  ┌─────────────────────────┐    │
+│  │      + Add Exercise     │    │
+│  └─────────────────────────┘    │
+│                                 │
+└─────────────────────────────────┘
+```
+
+**Exercise Dialog:**
+```
+┌─────────────────────────────────┐
+│  Add Exercise                   │
+├─────────────────────────────────┤
+│                                 │
+│  Exercise Name                  │
+│  ┌─────────────────────────┐    │
+│  │ Bench Press             │    │
+│  └─────────────────────────┘    │
+│                                 │
+│  Sets          Reps             │
+│  ┌──────┐     ┌──────┐          │
+│  │  4   │     │  6   │          │
+│  └──────┘     └──────┘          │
+│                                 │
+│  Weight        Unit             │
+│  ┌──────┐     ┌──────┐          │
+│  │ 185  │     │lbs[▼]│          │
+│  └──────┘     └──────┘          │
+│                                 │
+│  Distance      Unit             │
+│  ┌──────┐     ┌──────┐          │
+│  │      │     │mi [▼]│          │
+│  └──────┘     └──────┘          │
+│                                 │
+│  Duration (seconds)             │
+│  ┌─────────────────────────┐    │
+│  │                         │    │
+│  └─────────────────────────┘    │
+│                                 │
+│  Rest (seconds)                 │
+│  ┌─────────────────────────┐    │
+│  │ 120                     │    │
+│  └─────────────────────────┘    │
+│                                 │
+│  Notes                          │
+│  ┌─────────────────────────┐    │
+│  │ Focus on form           │    │
+│  └─────────────────────────┘    │
+│                                 │
+├─────────────────────────────────┤
+│  [Cancel]           [Save]      │
+└─────────────────────────────────┘
+```
+
+**Workout Type Options:**
+- Strength
+- Run
+- Swim
+- Murph
+- Mobility
+- Bike
+- Yoga
+- Cardio
+- Rest
+
+**Weight Unit Options:**
+- `lbs` (pounds)
+- `kg` (kilograms)
+
+**Distance Unit Options:**
+- `miles`
+- `km` (kilometers)
+- `meters`
+- `yards`
+- `laps`
+
+**Unit Normalization Behavior:**
+
+When loading existing exercises, the UI automatically normalizes unit values to match the dropdown options:
+
+- Input variations like "lb", "pound", "pounds" → displayed as "lbs"
+- Input variations like "kilometer", "km" → displayed as "km"
+- Input variations like "mi", "mile" → displayed as "miles"
+- Invalid or missing units → default to "lbs" for weight, "miles" for distance
+
+This normalization prevents dropdown validation errors when displaying saved exercises with non-standard unit formats. All matching is case-insensitive.
+
+**Validation:**
+- Exercise name: Required
+- At least one of: sets/reps, weight, duration, or distance must be provided
+- Weight unit and distance unit are automatically normalized from user input
+- Duration and rest must be positive integers if provided
+
+---
+
 ### Goals Screen
 
 **Route:** `/home` (Tab 2)

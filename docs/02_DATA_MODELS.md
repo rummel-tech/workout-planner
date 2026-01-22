@@ -358,15 +358,43 @@ strength | run | swim | murph | mobility | bike | yoga | cardio | rest
 **Exercise Object:**
 ```json
 {
-  "exercise": "string",
+  "name": "string",
   "sets": "integer | null",
   "reps": "integer | null",
   "weight": "float | null",
-  "duration": "string | null",
-  "distance": "string | null",
-  "rest": "string | null"
+  "weightUnit": "lbs | kg",
+  "duration": "integer | null (seconds)",
+  "rest": "integer | null (seconds between sets)",
+  "distance": "float | null",
+  "distanceUnit": "miles | km | meters | yards | laps",
+  "notes": "string | null"
 }
 ```
+
+**Unit Normalization:**
+
+Weight and distance units are automatically normalized when parsing from JSON to ensure consistent values:
+
+**Weight Unit Normalization:**
+| Input Values | Normalized To |
+|--------------|---------------|
+| `kg`, `kgs`, `kilogram`, `kilograms` | `kg` |
+| `lbs`, `lb`, `pound`, `pounds` | `lbs` |
+| Empty or null | `lbs` (default) |
+| Invalid values | `lbs` (default) |
+
+**Distance Unit Normalization:**
+| Input Values | Normalized To |
+|--------------|---------------|
+| `mi`, `mile`, `miles` | `miles` |
+| `km`, `kilometer`, `kilometers` | `km` |
+| `m`, `meter`, `meters`, `metre`, `metres` | `meters` |
+| `yd`, `yard`, `yards` | `yards` |
+| `lap`, `laps` | `laps` |
+| Empty or null | `miles` (default) |
+| Invalid values | `miles` (default) |
+
+**Note:** All unit matching is case-insensitive and trimmed. The normalization ensures dropdown validation works correctly in the UI by converting various user-friendly input formats to standard values.
 
 **SQL Definition:**
 ```sql

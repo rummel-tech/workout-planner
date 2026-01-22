@@ -417,6 +417,10 @@ class _ExerciseDialog extends StatefulWidget {
 }
 
 class _ExerciseDialogState extends State<_ExerciseDialog> {
+  // Valid dropdown options
+  static const List<String> _validWeightUnits = ['lbs', 'kg'];
+  static const List<String> _validDistanceUnits = ['miles', 'km', 'meters', 'yards', 'laps'];
+
   late TextEditingController _nameController;
   late TextEditingController _setsController;
   late TextEditingController _repsController;
@@ -435,6 +439,55 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
   bool get _isCardioType =>
       ['run', 'bike', 'swim', 'cardio', 'cycling'].contains(widget.workoutType.toLowerCase());
 
+  /// Normalize weight unit to valid dropdown value
+  String _normalizeWeightUnit(String? unit) {
+    if (unit == null || unit.isEmpty) return 'lbs';
+    final normalized = unit.toLowerCase().trim();
+
+    // Map common variations to valid values
+    if (normalized == 'kg' || normalized == 'kgs' || normalized == 'kilogram' || normalized == 'kilograms') {
+      return 'kg';
+    }
+    if (normalized == 'lbs' || normalized == 'lb' || normalized == 'pound' || normalized == 'pounds') {
+      return 'lbs';
+    }
+
+    // If it's already a valid unit, return it
+    if (_validWeightUnits.contains(normalized)) return normalized;
+
+    // Default to lbs if unknown
+    return 'lbs';
+  }
+
+  /// Normalize distance unit to valid dropdown value
+  String _normalizeDistanceUnit(String? unit) {
+    if (unit == null || unit.isEmpty) return 'miles';
+    final normalized = unit.toLowerCase().trim();
+
+    // Map common variations to valid values
+    if (normalized == 'mi' || normalized == 'mile' || normalized == 'miles') {
+      return 'miles';
+    }
+    if (normalized == 'km' || normalized == 'kilometer' || normalized == 'kilometers') {
+      return 'km';
+    }
+    if (normalized == 'm' || normalized == 'meter' || normalized == 'meters' || normalized == 'metre' || normalized == 'metres') {
+      return 'meters';
+    }
+    if (normalized == 'yd' || normalized == 'yard' || normalized == 'yards') {
+      return 'yards';
+    }
+    if (normalized == 'lap' || normalized == 'laps') {
+      return 'laps';
+    }
+
+    // If it's already a valid unit, return it
+    if (_validDistanceUnits.contains(normalized)) return normalized;
+
+    // Default to miles if unknown
+    return 'miles';
+  }
+
   @override
   void initState() {
     super.initState();
@@ -447,8 +500,8 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
     _restController = TextEditingController(text: e?.rest?.toString() ?? '');
     _distanceController = TextEditingController(text: e?.distance?.toString() ?? '');
     _notesController = TextEditingController(text: e?.notes ?? '');
-    _weightUnit = e?.weightUnit ?? 'lbs';
-    _distanceUnit = e?.distanceUnit ?? 'miles';
+    _weightUnit = _normalizeWeightUnit(e?.weightUnit);
+    _distanceUnit = _normalizeDistanceUnit(e?.distanceUnit);
     _nameIsValid = _nameController.text.trim().isNotEmpty;
     _nameController.addListener(_onNameChanged);
   }

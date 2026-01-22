@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../services/user_sync_service.dart';
 
 class NotificationSettingsScreen extends StatefulWidget {
   const NotificationSettingsScreen({super.key});
@@ -10,18 +9,13 @@ class NotificationSettingsScreen extends StatefulWidget {
 
 class _NotificationSettingsScreenState extends State<NotificationSettingsScreen> {
   bool enabled = true;
-  bool loading = true;
+  bool loading = false;
 
   @override
   void initState() {
     super.initState();
-    load();
-  }
-
-  Future<void> load() async {
-    final s = await UserSyncService().fetchSettings();
-    enabled = s?["notifications"] ?? true;
-    setState(() => loading = false);
+    // Notification settings will be loaded from backend API in future update
+    // For now, using local state
   }
 
   @override
@@ -30,13 +24,25 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
 
     return Scaffold(
       appBar: AppBar(title: const Text("Notification Settings")),
-      body: SwitchListTile(
-        title: const Text("Enable Notifications"),
-        value: enabled,
-        onChanged: (v) {
-          setState(() => enabled = v);
-          UserSyncService().updateSettings({"notifications": v});
-        },
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          SwitchListTile(
+            title: const Text("Enable Notifications"),
+            subtitle: const Text("Local setting only - sync coming soon"),
+            value: enabled,
+            onChanged: (v) {
+              // TODO: Implement notification settings API endpoint
+              setState(() => enabled = v);
+            },
+          ),
+          const SizedBox(height: 20),
+          const Text(
+            "Note: Notification preferences will sync with backend in next update",
+            style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }

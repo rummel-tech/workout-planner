@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../services/user_sync_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -14,23 +13,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final weightCtrl = TextEditingController();
   final heightCtrl = TextEditingController();
 
-  bool loading = true;
+  bool loading = false;
 
   @override
   void initState() {
     super.initState();
-    loadProfile();
-  }
-
-  Future<void> loadProfile() async {
-    final data = await UserSyncService().fetchUserProfile();
-    if (data != null) {
-      nameCtrl.text = data["name"] ?? "";
-      ageCtrl.text = (data["age"] ?? "").toString();
-      weightCtrl.text = (data["weight_lbs"] ?? "").toString();
-      heightCtrl.text = (data["height_in"] ?? "").toString();
-    }
-    setState(() => loading = false);
+    // Profile data will be loaded from backend API in future update
+    // For now, user can enter data locally
   }
 
   @override
@@ -49,15 +38,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: 20),
           ElevatedButton(
             onPressed: () {
-              UserSyncService().updateUserProfile({
-                "name": nameCtrl.text,
-                "age": int.tryParse(ageCtrl.text),
-                "weight_lbs": double.tryParse(weightCtrl.text),
-                "height_in": double.tryParse(heightCtrl.text),
-              });
+              // TODO: Implement profile update API endpoint
+              // Will be connected to /auth/profile PUT endpoint
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Profile updates coming soon")),
+              );
               Navigator.pop(context);
             },
             child: const Text("Save"),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            "Note: Profile sync with backend coming in next update",
+            style: Theme.of(context).textTheme.bodySmall,
+            textAlign: TextAlign.center,
           )
         ],
       ),
