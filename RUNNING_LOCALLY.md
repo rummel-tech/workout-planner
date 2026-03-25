@@ -3,12 +3,47 @@
 **Status**: ✅ **RUNNING**
 **Last Started**: 2026-01-22
 
+## 🚀 Quick Start - Use the Dev Script!
+
+**The easiest way to manage local development:**
+
+```bash
+# Check if services are running
+./dev.sh status
+
+# After making code changes
+./dev.sh hot-reload
+
+# View logs
+./dev.sh logs
+
+# See all commands
+./dev.sh help
+```
+
+**📖 Complete Guide**: See [DEV_QUICK_START.md](./DEV_QUICK_START.md)
+
+---
+
 ## Quick Access
 
 - **Frontend**: http://localhost:8080
 - **Backend API**: http://localhost:8000
 - **API Docs**: http://localhost:8000/docs
 - **DevTools**: http://127.0.0.1:41179/StEvPV9OX2A=/devtools/
+
+## Dev Script Quick Reference
+
+| Task | Command |
+|------|---------|
+| Check status | `./dev.sh status` or `./dev.sh st` |
+| Hot reload (fast) | `./dev.sh hot-reload` or `./dev.sh r` |
+| Hot restart | `./dev.sh hot-restart` |
+| View logs | `./dev.sh logs` |
+| Start all | `./dev.sh start-all` |
+| Stop all | `./dev.sh stop-all` |
+| Restart all | `./dev.sh restart-all` |
+| Run tests | `./dev.sh test-all` |
 
 ## System Status
 

@@ -47,8 +47,17 @@ void main() async {
   if (isConfigured) {
     final apiUrl = await secureConfig.getApiBaseUrl();
     if (apiUrl != null) {
-      ApiConfig.configure(baseUrl: apiUrl);
-      log.info("API URL set from secure config: $apiUrl");
+      // Fix: If the stored URL is pointing to frontend port (8080), correct it to backend port (8000)
+      final correctedUrl = apiUrl.replaceAll(':8080', ':8000');
+      if (correctedUrl != apiUrl) {
+        log.warning("Detected incorrect API URL ($apiUrl), correcting to: $correctedUrl");
+        await secureConfig.setApiBaseUrl(correctedUrl);
+        ApiConfig.configure(baseUrl: correctedUrl);
+        log.info("API URL corrected and saved: $correctedUrl");
+      } else {
+        ApiConfig.configure(baseUrl: apiUrl);
+        log.info("API URL set from secure config: $apiUrl");
+      }
     }
   }
 

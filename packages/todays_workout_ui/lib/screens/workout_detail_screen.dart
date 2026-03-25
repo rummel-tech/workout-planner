@@ -33,12 +33,38 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
 
   bool get _isEditing => widget.existingWorkout != null;
 
+  /// Normalize workout type to match dropdown values
+  /// Converts various case formats to properly capitalized version
+  String _normalizeWorkoutType(String? type) {
+    if (type == null || type.isEmpty) return 'Strength';
+
+    // Capitalize first letter, lowercase the rest
+    final normalized = type[0].toUpperCase() + type.substring(1).toLowerCase();
+
+    // Verify it's a valid workout type
+    if (_workoutTypes.contains(normalized)) {
+      return normalized;
+    }
+
+    // If still not found, try case-insensitive search
+    for (final validType in _workoutTypes) {
+      if (validType.toLowerCase() == type.toLowerCase()) {
+        return validType;
+      }
+    }
+
+    // Default to Strength if unknown type found
+    debugPrint('Warning: Unknown workout type "$type" normalized to "Strength". Valid types: ${_workoutTypes.join(", ")}');
+    return 'Strength';
+  }
+
   @override
   void initState() {
     super.initState();
 
     if (widget.existingWorkout != null) {
-      _selectedType = widget.existingWorkout!['type'] as String? ?? 'Strength';
+      final rawType = widget.existingWorkout!['type'] as String?;
+      _selectedType = _normalizeWorkoutType(rawType);
       _nameController = TextEditingController(
         text: widget.existingWorkout!['name'] as String? ?? _selectedType,
       );
@@ -528,20 +554,78 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
   }
 
   void _save() {
+    // Validate exercise name
+    final name = _nameController.text.trim();
+    if (name.isEmpty) {
+      _showError('Exercise Name Required',
+        'Please enter a name for this exercise (e.g., "Bench Press", "400m Run").');
+      return;
+    }
+
+    // Validate numeric inputs
+    final sets = _setsController.text.trim();
+    final reps = _repsController.text.trim();
+    final weight = _weightController.text.trim();
+    final duration = _durationController.text.trim();
+    final distance = _distanceController.text.trim();
+
+    // Check for invalid numeric values
+    if (sets.isNotEmpty && int.tryParse(sets) == null) {
+      _showError('Invalid Sets Value',
+        'Sets must be a whole number (e.g., 3, 4, 5). You entered: "$sets"');
+      return;
+    }
+    if (reps.isNotEmpty && int.tryParse(reps) == null) {
+      _showError('Invalid Reps Value',
+        'Reps must be a whole number (e.g., 8, 10, 12). You entered: "$reps"');
+      return;
+    }
+    if (weight.isNotEmpty && double.tryParse(weight) == null) {
+      _showError('Invalid Weight Value',
+        'Weight must be a number (e.g., 135, 185.5). You entered: "$weight"');
+      return;
+    }
+    if (duration.isNotEmpty && int.tryParse(duration) == null) {
+      _showError('Invalid Duration Value',
+        'Duration must be a whole number of seconds (e.g., 30, 60, 120). You entered: "$duration"');
+      return;
+    }
+    if (distance.isNotEmpty && double.tryParse(distance) == null) {
+      _showError('Invalid Distance Value',
+        'Distance must be a number (e.g., 1.5, 400, 5). You entered: "$distance"');
+      return;
+    }
+
     final exercise = Exercise(
-      name: _nameController.text.trim(),
-      sets: int.tryParse(_setsController.text),
-      reps: int.tryParse(_repsController.text),
-      weight: double.tryParse(_weightController.text),
+      name: name,
+      sets: int.tryParse(sets),
+      reps: int.tryParse(reps),
+      weight: double.tryParse(weight),
       weightUnit: _weightUnit,
-      duration: int.tryParse(_durationController.text),
+      duration: int.tryParse(duration),
       rest: int.tryParse(_restController.text),
-      distance: double.tryParse(_distanceController.text),
+      distance: double.tryParse(distance),
       distanceUnit: _distanceUnit,
       notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
     );
     widget.onSave(exercise);
     Navigator.pop(context);
+  }
+
+  void _showError(String title, String message) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override

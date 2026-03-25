@@ -6,6 +6,32 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a **Flutter application** for the Workout Planner - an AI-powered fitness coaching platform. The backend API is in a separate [services repository](https://github.com/rummel-tech/services/tree/main/workout-planner).
 
+## Quick Start - Local Development
+
+**Use the dev script for all local development tasks:**
+
+```bash
+# Check service status
+./dev.sh status
+
+# After code changes (hot reload - fastest)
+./dev.sh hot-reload
+
+# Full restart if needed
+./dev.sh hot-restart
+
+# View logs
+./dev.sh logs
+
+# Run tests
+./dev.sh test-all
+
+# See all commands
+./dev.sh help
+```
+
+**See [DEV_QUICK_START.md](./DEV_QUICK_START.md) for complete guide.**
+
 ## Development Commands
 
 ```bash

@@ -4,6 +4,7 @@ import '../services/weekly_plan_service.dart';
 import '../services/workout_service.dart';
 import '../services/auth_service.dart';
 import '../widgets/workout_selection_dialog.dart';
+import '../utils/week_ordering.dart';
 import 'dart:async';
 
 class WeeklyPlanEditScreen extends StatefulWidget {
@@ -34,15 +35,11 @@ class _WeeklyPlanEditScreenState extends State<WeeklyPlanEditScreen> {
     super.initState();
     _workoutService = WorkoutService(widget.authService);
     final rawDays = widget.initialPlan['days'] as List<dynamic>? ?? [];
-    _days = [
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-      'Sunday'
-    ].map((name) {
+
+    // Get ordered day names starting from yesterday
+    final orderedDays = getWeekStartingYesterday();
+
+    _days = orderedDays.map((name) {
       final existing = rawDays.cast<Map<String, dynamic>>().firstWhere(
             (d) => (d['day'] ?? '').toString().toLowerCase() == name.toLowerCase(),
             orElse: () => {},

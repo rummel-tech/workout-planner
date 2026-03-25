@@ -339,15 +339,19 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
         notchMargin: 8,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _navItem(0, Icons.home, 'Home'),
-            _navItem(1, Icons.calendar_today, 'Plan'),
-            const SizedBox(width: 48), // Space for FAB
-            _navItem(2, Icons.flag, 'Goals'),
-            _navItem(3, Icons.person, 'Profile'),
-          ],
+        height: 80,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _navItem(0, Icons.home, 'Home'),
+              _navItem(1, Icons.calendar_today, 'Plan'),
+              const SizedBox(width: 48), // Space for FAB
+              _navItem(2, Icons.flag, 'Goals'),
+              _navItem(3, Icons.person, 'Profile'),
+            ],
+          ),
         ),
       ),
     );
@@ -358,18 +362,21 @@ class _HomeScreenState extends State<HomeScreen> {
     return InkWell(
       onTap: () => setState(() => _currentIndex = index),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               icon,
+              size: 22,
               color: isSelected ? Theme.of(context).primaryColor : Colors.grey,
             ),
+            const SizedBox(height: 2),
             Text(
               label,
               style: TextStyle(
-                fontSize: 11,
+                fontSize: 10,
                 color: isSelected ? Theme.of(context).primaryColor : Colors.grey,
               ),
             ),

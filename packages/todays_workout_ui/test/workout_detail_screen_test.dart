@@ -261,4 +261,126 @@ void main() {
       expect(find.text('No exercises added'), findsNWidgets(3));
     });
   });
+
+  group('WorkoutDetailScreen - Workout Type Normalization', () {
+    testWidgets('normalizes lowercase workout type to capitalized', (WidgetTester tester) async {
+      final workout = {
+        'type': 'rest',  // lowercase
+        'name': 'Rest Day',
+      };
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: WorkoutDetailScreen(existingWorkout: workout),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Should normalize 'rest' to 'Rest' and display properly
+      expect(find.text('Rest'), findsWidgets);
+    });
+
+    testWidgets('normalizes uppercase workout type to capitalized', (WidgetTester tester) async {
+      final workout = {
+        'type': 'STRENGTH',  // uppercase
+        'name': 'Upper Body',
+      };
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: WorkoutDetailScreen(existingWorkout: workout),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Should normalize 'STRENGTH' to 'Strength' and display properly
+      expect(find.text('Strength'), findsWidgets);
+    });
+
+    testWidgets('normalizes mixed case workout type to capitalized', (WidgetTester tester) async {
+      final workout = {
+        'type': 'sWiM',  // mixed case
+        'name': 'Pool Session',
+      };
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: WorkoutDetailScreen(existingWorkout: workout),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Should normalize 'sWiM' to 'Swim' and display properly
+      expect(find.text('Swim'), findsWidgets);
+    });
+
+    testWidgets('handles unknown workout type gracefully', (WidgetTester tester) async {
+      final workout = {
+        'type': 'UnknownType',
+        'name': 'Unknown Workout',
+      };
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: WorkoutDetailScreen(existingWorkout: workout),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Should default to 'Strength' if unknown type is provided
+      expect(find.text('Strength'), findsWidgets);
+    });
+
+    testWidgets('normalizes strength from lowercase', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: WorkoutDetailScreen(
+            existingWorkout: {'type': 'strength', 'name': 'Strength Workout'},
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Strength'), findsWidgets);
+    });
+
+    testWidgets('normalizes run from lowercase', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: WorkoutDetailScreen(
+            existingWorkout: {'type': 'run', 'name': 'Run Workout'},
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Run'), findsWidgets);
+    });
+
+    testWidgets('normalizes swim from lowercase', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: WorkoutDetailScreen(
+            existingWorkout: {'type': 'swim', 'name': 'Swim Workout'},
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Swim'), findsWidgets);
+    });
+
+    testWidgets('normalizes murph from lowercase', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: WorkoutDetailScreen(
+            existingWorkout: {'type': 'murph', 'name': 'Murph Workout'},
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Murph'), findsWidgets);
+    });
+  });
 }
