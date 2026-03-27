@@ -1,119 +1,134 @@
 # Development Guide
 
-This document covers development setup, building, testing, and deployment for the Workout Planner application.
-
 ## Quick Start
 
 ```bash
-# Install dependencies
+./dev.sh status      # check everything is running
+./dev.sh hot-reload  # apply code changes (~2s)
+./dev.sh logs        # view live output
+```
+
+Backend: `http://localhost:8000` | API docs: `http://localhost:8000/docs`
+Frontend: `http://localhost:8080`
+
+---
+
+## Prerequisites
+
+- Flutter SDK ≥ 3.0
+- Python 3.11+
+- Backend running from `~/_Projects/services/workout-planner`
+
+---
+
+## Running Locally
+
+### Backend
+
+```bash
+cd ~/_Projects/services/workout-planner
+source .venv/bin/activate
+uvicorn main:app --reload --port 8000
+```
+
+### Frontend
+
+```bash
 flutter pub get
-
-# Run in development (connects to localhost:8000 by default)
-flutter run -d chrome
-
-# Run with production backend
+flutter run -d chrome          # web
+flutter run                    # connected device/emulator
+flutter run -d macos           # desktop
 flutter run -d chrome --dart-define=PRODUCTION_API_URL=http://<AWS_IP>:8000
 ```
+
+### Environment
+
+```bash
+cp .env.example .env   # then edit values — never commit .env
+```
+
+---
+
+## Dev Script Reference
+
+| Command | Shortcut | What it does |
+|---------|----------|--------------|
+| `./dev.sh status` | `st` | Health check all services |
+| `./dev.sh hot-reload` | `r` | Apply Dart changes (~2s) |
+| `./dev.sh hot-restart` | | Full Flutter restart (~10s) |
+| `./dev.sh start-all` | | Start frontend + backend |
+| `./dev.sh stop-all` | | Stop all services |
+| `./dev.sh logs` | `l` | Tail all logs |
+| `./dev.sh test-all` | | Run all tests |
+| `./dev.sh help` | | Full command list |
+
+Log files: `/tmp/flutter-workout.log`, `/tmp/workout-planner.log`
+
+---
 
 ## Project Structure
 
 ```
-workout-planner/
-├── lib/                         # Main application code
-│   ├── main.dart                # App entry point
-│   ├── config/                  # Environment configuration
-│   └── services/                # API clients
-├── packages/                    # Reusable UI packages
-│   ├── goals_ui/                # Goal setting screens
-│   ├── home_dashboard_ui/       # Home screen, auth
-│   ├── readiness_ui/            # Readiness score display
-│   ├── todays_workout_ui/       # Daily workout view
-│   ├── weekly_plan_ui/          # Weekly plan calendar
-│   ├── ai_insights_ui/          # AI recommendations
-│   ├── ai_coach_chat/           # Chat interface
-│   ├── settings_profile_ui/     # User settings
-│   └── health_integration/      # HealthKit/Google Fit
-├── test/                        # Unit tests
-├── integration_test/            # Integration tests
-├── ios/                         # iOS platform files
-├── web/                         # Web platform files
-├── linux/                       # Linux platform files
-├── resources/                   # Shared design assets (submodule)
-├── docs/                        # Documentation
-└── pubspec.yaml                 # Flutter dependencies
+workout-planner/             ← ~/_Projects/modules/planners/workout-planner
+├── lib/
+│   ├── main.dart                  # App entry, routing
+│   └── config/env_config.dart     # API URL resolution
+├── packages/                      # Feature packages
+│   ├── goals_ui/
+│   ├── home_dashboard_ui/         # Auth lives here
+│   ├── readiness_ui/
+│   ├── todays_workout_ui/
+│   ├── weekly_plan_ui/
+│   ├── ai_insights_ui/
+│   ├── ai_coach_chat/
+│   ├── settings_profile_ui/
+│   └── health_integration/
+├── test/
+├── integration_test/
+├── docs/                          # All documentation here
+├── dev.sh
+└── pubspec.yaml
 ```
 
-## Backend API
+---
 
-The backend is deployed to AWS ECS via the [services repository](https://github.com/rummel-tech/services).
+## iOS Signed Builds & CI
 
-**API Endpoints:**
-- Production: `http://<ECS_PUBLIC_IP>:8000`
-- Development: `http://localhost:8000` (run backend locally from services repo)
+**Required GitHub Secrets:**
+- `P12_BASE64` — base64 of your `.p12` certificate
+- `P12_PASSWORD` — certificate export password
+- `MOBILEPROVISION_BASE64` — base64 of provisioning profile
+- `KEYCHAIN_PASSWORD` — any random string for ephemeral CI keychain
 
-**Configuring API URL:**
+**Optional (TestFlight):** `APP_STORE_CONNECT_API_KEY`, `APP_STORE_CONNECT_ISSUER_ID`, `APP_STORE_CONNECT_KEY_ID`
 
 ```bash
-# Development (default - localhost)
-flutter run -d chrome
-
-# Production build with AWS backend
-flutter build web --dart-define=PRODUCTION_API_URL=http://<AWS_IP>:8000
+base64 -i your_cert.p12 | pbcopy
+base64 -i your_profile.mobileprovision | pbcopy
+# Add to: GitHub → Settings → Secrets and variables → Actions
 ```
 
-See `.env.example` for all configuration options.
+Trigger: GitHub → Actions → "iOS Signed Build" → Run workflow.
 
-## Running Tests
-
-```bash
-flutter test
-```
-
-## Working with Packages
-
-Each UI feature is a separate package for modularity:
-
-```bash
-# Update a package
-cd packages/goals_ui
-flutter pub get
-
-# Then update the main app
-cd ../..
-flutter pub get
-```
-
-## Building for Production
-
-```bash
-# Web (deployed to GitHub Pages)
-flutter build web --release
-
-# Android
-flutter build apk --release
-
-# iOS (requires Xcode)
-flutter build ios --release
-```
+---
 
 ## Deployment
 
-### Production Checklist
+```bash
+gh workflow run deploy-workout-planner-frontend.yml --repo rummel-tech/infrastructure
+gh workflow run deploy-workout-planner-backend.yml  --repo rummel-tech/infrastructure
+```
 
-Before deploying to production, complete the checklist in [`RELEASE_CHECKLIST.md`](../RELEASE_CHECKLIST.md). This includes:
+- Frontend: `https://rummel-tech.github.io/workout-planner/`
+- Backend: `https://api.rummeltech.com/workout-planner`
 
-- Backend endpoint implementation (OAuth, password reset)
-- Platform-specific configuration (iOS, Android, Web)
-- Security review and compliance
-- App store submission preparation
+---
 
-See [`PRODUCTION_DEPLOYMENT.md`](../PRODUCTION_DEPLOYMENT.md) for detailed deployment procedures.
+## Testing
 
-**Production URL:** https://rummel-tech.github.io/workout-planner/
-
-## Related Repositories
-
-- **[services](https://github.com/rummel-tech/services)** - Backend API (FastAPI)
-- **[infrastructure](https://github.com/rummel-tech/infrastructure)** - CI/CD workflows
-- **[resources](https://github.com/rummel-tech/resources)** - Shared design assets
-- **[documentation](https://github.com/rummel-tech/documentation)** - Platform documentation
+```bash
+./dev.sh test-all          # everything
+flutter test               # unit tests
+flutter test --coverage    # with coverage
+pytest                     # backend (run from ~/_Projects/services/workout-planner)
+```

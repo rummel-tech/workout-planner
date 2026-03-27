@@ -1,165 +1,70 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guidance for Claude Code when working in this repository.
 
 ## Project Overview
 
-This is a **Flutter application** for the Workout Planner - an AI-powered fitness coaching platform. The backend API is in a separate [services repository](https://github.com/rummel-tech/services/tree/main/workout-planner).
+**Workout Planner** — AI-powered fitness coaching Flutter application.
 
-## Quick Start - Local Development
+| Path | Contents |
+|------|----------|
+| `~/_Projects/modules/planners/workout-planner` | This repo — Flutter frontend |
+| `~/_Projects/services/workout-planner` | FastAPI backend |
+| `~/_Projects/services/workout-planner-ai-engine` | AI engine (goals, readiness, plans) |
+| `~/_Projects/services/workout-planner-integration-layer` | Integration layer |
+| `~/_Projects/services/common` | Shared Python infrastructure |
+| `rummel-tech/resources` | Platform contract + design system |
 
-**Use the dev script for all local development tasks:**
+## ⚠️ Documentation Rules
 
-```bash
-# Check service status
-./dev.sh status
+**Do NOT create session/fix files in the repo root.**
+Put context in commit messages and update `CHANGELOG.md` instead.
 
-# After code changes (hot reload - fastest)
-./dev.sh hot-reload
+Never create: `SESSION_SUMMARY.md`, `*_FIX.md`, `*_FIX_SUMMARY.md`, `*_UPDATE.md`
 
-# Full restart if needed
-./dev.sh hot-restart
+Do instead:
+- Describe the fix in the git commit message
+- Add a line to `CHANGELOG.md` under `[Unreleased]`
+- Add permanent guidance to `docs/DEVELOPMENT.md`
 
-# View logs
-./dev.sh logs
-
-# Run tests
-./dev.sh test-all
-
-# See all commands
-./dev.sh help
-```
-
-**See [DEV_QUICK_START.md](./DEV_QUICK_START.md) for complete guide.**
-
-## Development Commands
+## Quick Start
 
 ```bash
-# Install dependencies
-flutter pub get
-
-# Run the app
-flutter run -d chrome                    # Web
-flutter run                              # Connected device/emulator
-flutter run -d macos                     # Desktop
-
-# Run with production backend
-flutter run -d chrome --dart-define=PRODUCTION_API_URL=http://<AWS_IP>:8000
-
-# Testing
-flutter test                             # Unit tests
-flutter test --coverage                  # With coverage
-
-# Build for production
-flutter build web --release
-flutter build apk --release
-flutter build ios --release
+./dev.sh status      # check services
+./dev.sh hot-reload  # apply changes (~2s)
+./dev.sh logs        # view output
 ```
+
+Backend: `http://localhost:8000` | Frontend: `http://localhost:8080`
 
 ## Code Structure
 
 ```
-workout-planner/
-├── lib/                         # Main application code
-│   ├── main.dart                # App entry point, navigation
-│   ├── config/
-│   │   └── env_config.dart      # API URL configuration
-│   └── services/                # API clients
-├── packages/                    # Reusable UI packages
-│   ├── goals_ui/                # Goal setting screens
-│   ├── home_dashboard_ui/       # Home screen, login, auth
-│   ├── readiness_ui/            # Readiness score display
-│   ├── todays_workout_ui/       # Daily workout view
-│   ├── weekly_plan_ui/          # Weekly plan calendar
-│   ├── ai_insights_ui/          # AI recommendations
-│   ├── ai_coach_chat/           # Chat interface
-│   ├── settings_profile_ui/     # User settings
-│   └── health_integration/      # HealthKit/Google Fit
-├── test/                        # Unit tests
-├── integration_test/            # Integration tests
-├── ios/                         # iOS platform
-├── linux/                       # Linux platform
-├── web/                         # Web platform
-├── docs/                        # Flutter-specific documentation
-├── pubspec.yaml                 # Dependencies
-└── analysis_options.yaml        # Dart analysis rules
+lib/main.dart                      # App entry, routing
+lib/config/env_config.dart         # API URL config
+packages/home_dashboard_ui/        # Auth lives here
+packages/goals_ui/
+packages/todays_workout_ui/
+packages/weekly_plan_ui/
+packages/ai_coach_chat/
+packages/health_integration/
+docs/DEVELOPMENT.md                # Full dev guide
 ```
-
-## API Configuration
-
-The app reads API URL from environment variables. See `lib/config/env_config.dart`:
-
-**Priority:**
-1. `API_BASE_URL` - Direct override
-2. `PRODUCTION_API_URL` - Production URL
-3. Platform-specific: `WEB_API_URL`, `ANDROID_API_URL`, `IOS_API_URL`
-4. Default: `http://localhost:8000`
-
-**Build examples:**
-```bash
-flutter run -d chrome                                                    # localhost
-flutter build web --dart-define=PRODUCTION_API_URL=http://<IP>:8000     # production
-```
-
-## Package Architecture
-
-Each feature is a separate package in `packages/`. Packages reference each other by path:
-
-```yaml
-dependencies:
-  goals_ui:
-    path: packages/goals_ui
-```
-
-**Working with packages:**
-```bash
-cd packages/goals_ui
-# make changes
-flutter pub get
-
-cd ../..
-flutter pub get  # update main app
-```
-
-## Common Workflows
-
-### Adding a New Screen
-
-1. Create package in `packages/`
-2. Add `pubspec.yaml`
-3. Create screen in `lib/screens/`
-4. Export from `lib/<package>.dart`
-5. Add to `pubspec.yaml`
-6. Add to navigation in `lib/main.dart`
-
-### Updating API Calls
-
-Services are in each package (e.g., `packages/home_dashboard_ui/lib/services/auth_service.dart`). They use `http` package and accept `baseUrl` parameter.
-
-## Key Files
-
-- `lib/main.dart` - App entry, navigation
-- `lib/config/env_config.dart` - API URL config
-- `packages/home_dashboard_ui/lib/services/auth_service.dart` - Authentication
-- `packages/goals_ui/lib/services/goals_api_service.dart` - Goals API
-- `pubspec.yaml` - Dependencies
 
 ## Backend
 
-Backend API is in a separate repository at `/home/shawn/APP_DEV/services/workout-planner/`. To run locally:
-
 ```bash
-cd /home/shawn/APP_DEV/services/workout-planner
+cd ~/_Projects/services/workout-planner
 source .venv/bin/activate
 uvicorn main:app --reload --port 8000
 ```
 
-Key endpoints: `/auth/login`, `/auth/register`, `/goals`, `/daily-plans`, `/weekly-plans`, `/chat/messages`, `/health/summary`, `/readiness`
+Key endpoints: `/auth/login`, `/auth/register`, `/goals`, `/daily-plans`,
+`/weekly-plans`, `/chat/messages`, `/health/summary`, `/readiness`, `/health`, `/ready`
 
 ## Deployment
 
-Frontend deploys to GitHub Pages via infrastructure repo:
-
 ```bash
 gh workflow run deploy-workout-planner-frontend.yml --repo rummel-tech/infrastructure
+gh workflow run deploy-workout-planner-backend.yml  --repo rummel-tech/infrastructure
 ```
