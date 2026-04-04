@@ -8,12 +8,10 @@ Guidance for Claude Code when working in this repository.
 
 | Path | Contents |
 |------|----------|
-| `~/_Projects/modules/planners/workout-planner` | This repo — Flutter frontend |
+| `~/_Projects/workout-planner` | This repo — Flutter app (monorepo root) |
 | `~/_Projects/services/workout-planner` | FastAPI backend |
-| `~/_Projects/services/workout-planner-ai-engine` | AI engine (goals, readiness, plans) |
-| `~/_Projects/services/workout-planner-integration-layer` | Integration layer |
 | `~/_Projects/services/common` | Shared Python infrastructure |
-| `rummel-tech/resources` | Platform contract + design system |
+| `~/_Projects/resources` | Platform contract (`ARTEMIS_MODULE_CONTRACT.md`) + design assets |
 
 ## ⚠️ Documentation Rules
 
@@ -65,6 +63,6 @@ Key endpoints: `/auth/login`, `/auth/register`, `/goals`, `/daily-plans`,
 ## Deployment
 
 ```bash
-gh workflow run deploy-workout-planner-frontend.yml --repo rummel-tech/infrastructure
-gh workflow run deploy-workout-planner-backend.yml  --repo rummel-tech/infrastructure
+gh workflow run deploy-workout-planner-frontend.yml --repo <your-org>/infrastructure
+gh workflow run deploy-workout-planner-backend.yml  --repo <your-org>/infrastructure
 ```

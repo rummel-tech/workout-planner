@@ -69,7 +69,7 @@ Log files: `/tmp/flutter-workout.log`, `/tmp/workout-planner.log`
 ## Project Structure
 
 ```
-workout-planner/             ← ~/_Projects/modules/planners/workout-planner
+workout-planner/             ← monorepo root: ~/_Projects/workout-planner
 ├── lib/
 │   ├── main.dart                  # App entry, routing
 │   └── config/env_config.dart     # API URL resolution
@@ -115,8 +115,8 @@ Trigger: GitHub → Actions → "iOS Signed Build" → Run workflow.
 ## Deployment
 
 ```bash
-gh workflow run deploy-workout-planner-frontend.yml --repo rummel-tech/infrastructure
-gh workflow run deploy-workout-planner-backend.yml  --repo rummel-tech/infrastructure
+gh workflow run deploy-workout-planner-frontend.yml --repo <your-org>/infrastructure
+gh workflow run deploy-workout-planner-backend.yml  --repo <your-org>/infrastructure
 ```
 
 - Frontend: `https://rummel-tech.github.io/workout-planner/`

@@ -18,7 +18,6 @@ Welcome to the Workout Planner documentation. This directory contains all projec
 ### Features & Implementation
 - **[AI_CHAT_IMPLEMENTATION.md](./AI_CHAT_IMPLEMENTATION.md)** - AI chatbot implementation details
 - **[AI_COACH_CHAT.md](./AI_COACH_CHAT.md)** - AI coach chat feature documentation
-- **[GOAL_PLANS_PERSISTENCE_FIX.md](./GOAL_PLANS_PERSISTENCE_FIX.md)** - Goal plans persistence implementation
 - **[HEALTH_INTEGRATION.md](./HEALTH_INTEGRATION.md)** - Complete Apple Health (HealthKit) integration guide with data flow, APIs, and backend storage
 - **[NAVIGATION_AND_FORMS.md](./NAVIGATION_AND_FORMS.md)** - Comprehensive navigation and forms implementation guide
 - **[NAVIGATION_FORMS_QUICK_REFERENCE.md](./NAVIGATION_FORMS_QUICK_REFERENCE.md)** - Quick reference for navigation patterns
@@ -38,15 +37,14 @@ Welcome to the Workout Planner documentation. This directory contains all projec
 
 ## 🔍 Additional Documentation
 
-### Component-Specific Documentation
-- **Frontend**: See `applications/frontend/README.md`
-- **Backend Integration Layer**: See `applications/backend/backend_integration_layer/README.md`
-- **HealthKit Module**: See `integrations/swift_healthkit_module/README.md`
-- **Mobile App**: See `applications/frontend/apps/mobile_app/README.md`
+### Component-specific documentation
+- **App root**: See [`../README.md`](../README.md)
+- **Flutter packages**: See `packages/` under the app root (e.g. `goals_ui/`, `health_integration/`)
+- **Backend**: See [`../../services/workout-planner/README.md`](../../services/workout-planner/README.md)
 
 ## 📖 Documentation Standards
 
-See **[Documentation Conventions](https://github.com/rummel-tech/documentation/blob/main/best-practices/documentation-conventions.md)** for complete documentation guidelines including:
+See **[Documentation conventions](../../docs/best-practices/documentation-conventions.md)** (monorepo `docs/`) for guidelines including:
 - File naming conventions
 - Content organization
 - Update frequency requirements
@@ -69,4 +67,4 @@ Key principles:
 
 ---
 
-*Last Updated: December 14, 2025*
+*Last updated: April 2026*

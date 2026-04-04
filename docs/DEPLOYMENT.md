@@ -4,7 +4,7 @@
 
 | Target | Method | Notes |
 |--------|--------|-------|
-| Web (GitHub Pages) | GitHub Actions | `rummel-tech/workout-planner` |
+| Web (GitHub Pages) | GitHub Actions | Your app + infra GitHub repos |
 | iOS | GitHub Actions + Xcode | TestFlight / App Store |
 | Android | GitHub Actions | Play Store |
 | Backend (ECS) | `infrastructure/.github/workflows/deploy-workout-planner-backend.yml` | Port 8000 |
@@ -21,7 +21,7 @@ Backend runs on AWS ECS Fargate via the shared deploy pipeline.
 **Deploy manually:**
 ```bash
 gh workflow run deploy-workout-planner-backend.yml \
-  --repo rummel-tech/infrastructure \
+  --repo <your-org>/infrastructure \
   -f environment=production
 ```
 
@@ -46,7 +46,7 @@ flutter build web --release \
 
 # Or trigger CI:
 gh workflow run deploy-workout-planner-frontend.yml \
-  --repo rummel-tech/infrastructure
+  --repo <your-org>/infrastructure
 ```
 
 ### iOS
