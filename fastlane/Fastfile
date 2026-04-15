@@ -1,0 +1,51 @@
+default_platform(:ios)
+
+platform :ios do
+  desc "Build and upload to TestFlight"
+  lane :beta do
+    # Authenticate with App Store Connect API key
+    api_key = app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_KEY_ID"],
+      issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
+      key_content: ENV["APP_STORE_CONNECT_PRIVATE_KEY"],
+      is_key_content_base64: true,
+      in_house: false,
+    )
+
+    # Sync provisioning profile via match (read-only in CI)
+    match(
+      type: "appstore",
+      app_identifier: "com.rummeltech.workoutPlanner",
+      readonly: true,
+      api_key: api_key,
+    )
+
+    # Build the IPA
+    gym(
+      workspace: "ios/Runner.xcworkspace",
+      scheme: "Runner",
+      configuration: "Release",
+      export_method: "app-store",
+      export_options: {
+        teamID: ENV["APPLE_TEAM_ID"],
+        provisioningProfiles: {
+          "com.rummeltech.workoutPlanner" => ENV["PROVISIONING_PROFILE_NAME"],
+        },
+      },
+      output_directory: "build/ios/ipa",
+      output_name: "WorkoutPlanner.ipa",
+      clean: true,
+    )
+
+    # Upload to TestFlight
+    pilot(
+      api_key: api_key,
+      ipa: "build/ios/ipa/WorkoutPlanner.ipa",
+      skip_waiting_for_build_processing: true,
+      skip_submission: true,
+      distribute_external: false,
+      notify_external_testers: false,
+      changelog: "Beta build from CI",
+    )
+  end
+end

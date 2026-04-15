@@ -5,7 +5,7 @@
 	<key>method</key>
 	<string>app-store</string>
 	<key>teamID</key>
-	<string>YOUR_TEAM_ID</string>
+	<string>$(APPLE_TEAM_ID)</string>
 	<key>uploadBitcode</key>
 	<false/>
 	<key>uploadSymbols</key>
@@ -16,8 +16,8 @@
 	<string>manual</string>
 	<key>provisioningProfiles</key>
 	<dict>
-		<key>com.rummel.workoutplanner</key>
-		<string>YOUR_PROVISIONING_PROFILE_NAME</string>
+		<key>com.rummeltech.workoutPlanner</key>
+		<string>$(PROVISIONING_PROFILE_NAME)</string>
 	</dict>
 </dict>
 </plist>
