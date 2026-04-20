@@ -1,4 +1,4 @@
-package com.example.workout_planner
+package com.rummeltech.fitness.planner
 
 import io.flutter.embedding.android.FlutterActivity
 

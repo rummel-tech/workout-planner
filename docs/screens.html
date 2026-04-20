@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Workout Planner — Screens</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f0f0f0; color: #1a1a1a; padding: 32px 24px; }
+    h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+    .subtitle { font-size: 13px; color: #666; margin-bottom: 36px; }
+    .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #999; margin: 48px 0 16px; padding-bottom: 6px; border-bottom: 1px solid #ddd; }
+    .screens { display: flex; flex-wrap: wrap; gap: 32px; }
+    .phone { width: 320px; flex-shrink: 0; }
+    .phone-label { font-size: 11px; font-weight: 600; color: #666; text-align: center; margin-bottom: 8px; text-transform: uppercase; letter-spacing: .05em; }
+    .phone-shell { background: #fff; border-radius: 28px; border: 2.5px solid #333; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,.12); position: relative; }
+    .status-bar { background: #fff; display: flex; justify-content: space-between; align-items: center; padding: 10px 20px 4px; font-size: 11px; font-weight: 600; color: #333; border-bottom: 1px solid #f0f0f0; }
+    .app-bar { background: #fff; padding: 14px 16px 10px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #ececec; }
+    .app-bar .title { font-size: 18px; font-weight: 700; flex: 1; }
+    .app-bar .actions { display: flex; gap: 6px; }
+    .app-bar .actions span { font-size: 20px; color: #555; }
+    .screen-body { min-height: 500px; padding: 14px; background: #fafafa; overflow: hidden; }
+    .card { background: #fff; border-radius: 12px; border: 1px solid #e8e8e8; padding: 14px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+    .text-xs { font-size: 10px; } .text-sm { font-size: 12px; } .text-md { font-size: 14px; } .text-lg { font-size: 16px; font-weight: 700; } .text-xl { font-size: 20px; font-weight: 800; }
+    .muted { color: #888; } .primary { color: #1976D2; }
+    .row { display: flex; align-items: center; gap: 8px; } .row-sb { display: flex; align-items: center; justify-content: space-between; } .col { display: flex; flex-direction: column; gap: 4px; } .flex-1 { flex: 1; }
+    .chip { font-size: 10px; font-weight: 600; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; display: inline-block; }
+    .chip-blue { background: #E3F2FD; color: #1976D2; } .chip-green { background: #E8F5E9; color: #2E7D32; } .chip-amber { background: #FFF8E1; color: #E65100; } .chip-grey { background: #F5F5F5; color: #555; } .chip-red { background: #FCE4EC; color: #C62828; }
+    .btn-filled { width: 100%; background: #1976D2; color: #fff; border: none; border-radius: 10px; padding: 12px; font-size: 14px; font-weight: 600; text-align: center; margin-top: 8px; }
+    .btn-outline { background: #fff; color: #1976D2; border: 1.5px solid #1976D2; border-radius: 8px; padding: 8px 16px; font-size: 12px; font-weight: 600; display: inline-block; }
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-size: 11px; font-weight: 600; color: #555; margin-bottom: 4px; text-transform: uppercase; letter-spacing: .04em; }
+    .field-input { width: 100%; border: 1.5px solid #ccc; border-radius: 8px; padding: 8px 10px; font-size: 13px; color: #222; background: #fff; }
+    .stat-row { display: flex; gap: 8px; margin-bottom: 12px; }
+    .stat-box { flex: 1; background: #fff; border-radius: 10px; border: 1px solid #e8e8e8; padding: 10px 8px; text-align: center; }
+    .stat-val { font-size: 18px; font-weight: 700; color: #1976D2; }
+    .stat-lbl { font-size: 10px; color: #888; margin-top: 2px; }
+    .progress-bar-bg { background: #E3F2FD; border-radius: 4px; height: 8px; margin: 6px 0; }
+    .progress-bar-fill { background: #1976D2; border-radius: 4px; height: 8px; }
+    .hero-card { background: linear-gradient(135deg, #1976D2, #42A5F5); border-radius: 14px; padding: 16px; margin-bottom: 14px; color: #fff; }
+    .exercise-tile { padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+    .exercise-tile:last-child { border-bottom: none; }
+    .set-row { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+    .set-badge { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 6px; background: #E3F2FD; color: #1976D2; }
+    .readiness-row { display: flex; gap: 8px; margin-bottom: 14px; }
+    .readiness-box { flex: 1; border-radius: 10px; padding: 10px 8px; text-align: center; }
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f0f0f0; }
+    .toggle { width: 40px; height: 22px; border-radius: 11px; background: #1976D2; position: relative; flex-shrink: 0; }
+    .toggle-thumb { width: 18px; height: 18px; border-radius: 50%; background: #fff; position: absolute; right: 2px; top: 2px; }
+    .toggle.off { background: #ccc; }
+    .toggle.off .toggle-thumb { right: auto; left: 2px; }
+  </style>
+</head>
+<body>
+
+  <h1>🏋️ Workout Planner</h1>
+  <p class="subtitle">AI-generated training plans that adapt to your recovery, readiness, and goals.</p>
+
+  <!-- ── Auth / Onboarding ── -->
+  <div class="section-label">Auth &amp; Onboarding</div>
+  <div class="screens">
+
+    <div class="phone">
+      <div class="phone-label">Welcome</div>
+      <div class="phone-shell">
+        <div class="status-bar"><span>9:41</span><span>●●●</span></div>
+        <div class="screen-body" style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:40px 20px;">
+          <div style="font-size:72px; margin-bottom:16px;">🏋️</div>
+          <div class="text-xl" style="margin-bottom:8px;">Workout Planner</div>
+          <div class="text-sm muted" style="margin-bottom:32px; line-height:1.6;">AI-powered training plans<br>that adapt to your body and goals.</div>
+          <div class="btn-filled">Get Started</div>
+          <div style="margin-top:12px; font-size:12px; color:#1976D2; font-weight:600;">Already have an account? Sign In</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phone">
+      <div class="phone-label">Login</div>
+      <div class="phone-shell">
+        <div class="status-bar"><span>9:41</span><span>●●●</span></div>
+        <div class="screen-body" style="padding:32px 20px;">
+          <div style="font-size:22px; font-weight:800; margin-bottom:4px;">Welcome back</div>
+          <div class="text-sm muted" style="margin-bottom:24px;">Sign in to your account</div>
+          <div class="field">
+            <label>Email</label>
+            <div class="field-input" style="color:#aaa; font-style:italic;">you@example.com</div>
+          </div>
+          <div class="field">
+            <label>Password</label>
+            <div class="row" style="border: 1.5px solid #1976D2; border-radius:8px; padding: 8px 10px; background:#fff;">
+              <span class="flex-1 text-sm">••••••••</span><span class="text-xs muted">👁</span>
+            </div>
+          </div>
+          <div class="btn-filled">Sign In</div>
+          <div style="text-align:center; margin-top:16px; font-size:12px; color:#888;">Don't have an account? <span style="color:#1976D2; font-weight:600;">Register</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phone">
+      <div class="phone-label">Setup — Profile</div>
+      <div class="phone-shell">
+        <div class="status-bar"><span>9:41</span><span>●●●</span></div>
+        <div class="app-bar"><div class="title">Your Profile</div></div>
+        <div class="screen-body">
+          <div class="text-sm muted" style="margin-bottom:16px;">Tell us about yourself so we can build the right plan.</div>
+          <div class="field"><label>Full Name</label><div class="field-input">Alex Johnson</div></div>
+          <div class="field"><label>Age</label><div class="field-input">28</div></div>
+          <div class="field"><label>Weight (lbs)</label><div class="field-input">175</div></div>
+          <div class="field"><label>Height (in)</label><div class="field-input">71</div></div>
+          <div class="btn-filled">Continue</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Main Screens ── -->
+  <div class="section-label">Main Screens</div>
+  <div class="screens">
+
+    <!-- Training Plan — Today -->
+    <div class="phone">
+      <div class="phone-label">Training Plan — Today</div>
+      <div class="phone-shell">
+        <div class="status-bar"><span>9:41</span><span>●●●</span></div>
+        <div class="app-bar">
+          <div class="title">Training Plan</div>
+          <div class="actions"><span>⚙️</span></div>
+        </div>
+        <div class="screen-body">
+          <div class="readiness-row">
+            <div class="readiness-box" style="background:#E8F5E9;">
+              <div style="font-size:20px;">💤</div>
+              <div style="font-size:18px; font-weight:800; color:#2E7D32;">87</div>
+              <div class="text-xs muted">Recovery</div>
+            </div>
+            <div class="readiness-box" style="background:#E3F2FD;">
+              <div style="font-size:20px;">❤️</div>
+              <div style="font-size:18px; font-weight:800; color:#1976D2;">58 ms</div>
+              <div class="text-xs muted">HRV</div>
+            </div>
+            <div class="readiness-box" style="background:#FFF8E1;">
+              <div style="font-size:20px;">🔥</div>
+              <div style="font-size:18px; font-weight:800; color:#E65100;">420</div>
+              <div class="text-xs muted">Cal Burned</div>
+            </div>
+          </div>
+
+          <div class="hero-card">
+            <div class="text-sm" style="opacity:.8; margin-bottom:4px;">Today's Plan</div>
+            <div style="font-size:20px; font-weight:800; margin-bottom:4px;">Upper Body Strength</div>
+            <div style="opacity:.85; font-size:12px;">4 exercises · ~50 min · Moderate intensity</div>
+          </div>
+
+          <div class="card" style="padding: 8px 14px;">
+            <div class="exercise-tile">
+              <div class="row-sb">
+                <span class="text-sm" style="font-weight:700;">Bench Press</span>
+                <span class="chip chip-blue">Primary</span>
+              </div>
+              <div class="set-row">
+                <div class="set-badge">4×8 @ 155 lbs</div>
+                <div class="set-badge">Rest 90s</div>
+              </div>
+            </div>
+            <div class="exercise-tile">
+              <div class="row-sb">
+                <span class="text-sm" style="font-weight:700;">Incline DB Press</span>
+                <span class="chip chip-grey">Accessory</span>
+              </div>
+              <div class="set-row">
+                <div class="set-badge">3×10 @ 50 lbs</div>
+                <div class="set-badge">Rest 60s</div>
+              </div>
+            </div>
+            <div class="exercise-tile">
+              <div class="row-sb">
+                <span class="text-sm" style="font-weight:700;">Pull-ups</span>
+                <span class="chip chip-blue">Primary</span>
+              </div>
+              <div class="set-row">
+                <div class="set-badge">4×6 BW</div>
+                <div class="set-badge">Rest 90s</div>
+              </div>
+            </div>
+            <div class="exercise-tile">
+              <div class="row-sb">
+                <span class="text-sm" style="font-weight:700;">Overhead Press</span>
+                <span class="chip chip-grey">Accessory</span>
+              </div>
+              <div class="set-row">
+                <div class="set-badge">3×8 @ 95 lbs</div>
+                <div class="set-badge">Rest 60s</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Weekly Plan -->
+    <div class="phone">
+      <div class="phone-label">Training Plan — Weekly</div>
+      <div class="phone-shell">
+        <div class="status-bar"><span>9:41</span><span>●●●</span></div>
+        <div class="app-bar"><div class="title">Weekly Plan</div></div>
+        <div class="screen-body">
+          <div class="stat-row">
+            <div class="stat-box"><div class="stat-val">4</div><div class="stat-lbl">Sessions</div></div>
+            <div class="stat-box"><div class="stat-val">1,680</div><div class="stat-lbl">Cal Target</div></div>
+            <div class="stat-box"><div class="stat-val">3h 20m</div><div class="stat-lbl">Volume</div></div>
+          </div>
+          <div class="card" style="padding:8px 14px;">
+            <div class="exercise-tile">
+              <div class="row-sb">
+                <span class="text-sm" style="font-weight:700;">Monday</span>
+                <span class="chip chip-blue">Upper Body</span>
+              </div>
+              <div class="text-xs muted">Bench Press, Pull-ups, OHP · 50 min</div>
+            </div>
+            <div class="exercise-tile">
+              <div class="row-sb">
+                <span class="text-sm" style="font-weight:700;">Tuesday</span>
+                <span class="chip chip-grey">Rest / Recovery</span>
+              </div>
+              <div class="text-xs muted">Active recovery or rest</div>
+            </div>
+            <div class="exercise-tile">
+              <div class="row-sb">
+                <span class="text-sm" style="font-weight:700;">Wednesday</span>
+                <span class="chip chip-green">Lower Body</span>
+              </div>
+              <div class="text-xs muted">Squat, RDL, Leg Press · 55 min</div>
+            </div>
+            <div class="exercise-tile">
+              <div class="row-sb">
+                <span class="text-sm" style="font-weight:700;">Thursday</span>
+                <span class="chip chip-blue">Upper Body</span>
+              </div>
+              <div class="text-xs muted" style="color:#1976D2; font-weight:600;">Today</div>
+            </div>
+            <div class="exercise-tile">
+              <div class="row-sb">
+                <span class="text-sm" style="font-weight:700;">Friday</span>
+                <span class="chip chip-grey">Rest</span>
+              </div>
+            </div>
+            <div class="exercise-tile">
+              <div class="row-sb">
+                <span class="text-sm" style="font-weight:700;">Saturday</span>
+                <span class="chip chip-green">Full Body</span>
+              </div>
+              <div class="text-xs muted">Deadlift, Rows, Dips · 60 min</div>
+            </div>
+            <div class="exercise-tile">
+              <div class="row-sb">
+                <span class="text-sm" style="font-weight:700;">Sunday</span>
+                <span class="chip chip-grey">Rest</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Profile & Settings ── -->
+  <div class="section-label">Profile &amp; Settings</div>
+  <div class="screens">
+
+    <div class="phone">
+      <div class="phone-label">Profile</div>
+      <div class="phone-shell">
+        <div class="status-bar"><span>9:41</span><span>●●●</span></div>
+        <div class="app-bar"><div class="title">Profile</div></div>
+        <div class="screen-body">
+          <div class="field"><label>Full Name</label><div class="field-input">Alex Johnson</div></div>
+          <div class="field"><label>Age</label><div class="field-input">28</div></div>
+          <div class="field"><label>Weight (lbs)</label><div class="field-input">175</div></div>
+          <div class="field"><label>Height (in)</label><div class="field-input">71</div></div>
+          <div class="btn-filled">Save Profile</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phone">
+      <div class="phone-label">Settings</div>
+      <div class="phone-shell">
+        <div class="status-bar"><span>9:41</span><span>●●●</span></div>
+        <div class="app-bar"><div class="title">Settings</div></div>
+        <div class="screen-body">
+          <div class="card" style="padding:4px 14px;">
+            <div class="toggle-row">
+              <div class="col">
+                <span class="text-sm" style="font-weight:600;">Enable Notifications</span>
+                <span class="text-xs muted">Workout reminders and plan updates</span>
+              </div>
+              <div class="toggle"><div class="toggle-thumb"></div></div>
+            </div>
+            <div class="toggle-row">
+              <div class="col">
+                <span class="text-sm" style="font-weight:600;">Apple Health Sync</span>
+                <span class="text-xs muted">HRV, sleep, and workout data</span>
+              </div>
+              <div class="toggle"><div class="toggle-thumb"></div></div>
+            </div>
+            <div class="toggle-row" style="border-bottom:none;">
+              <div class="col">
+                <span class="text-sm" style="font-weight:600;">Dark Mode</span>
+                <span class="text-xs muted">Follow system setting</span>
+              </div>
+              <div class="toggle off"><div class="toggle-thumb"></div></div>
+            </div>
+          </div>
+          <div class="card" style="padding:4px 14px; margin-top:4px;">
+            <div class="toggle-row" style="border-bottom:none;">
+              <div class="col">
+                <span class="text-sm" style="font-weight:600;">Notification Settings</span>
+                <span class="text-xs muted">Manage individual notification types</span>
+              </div>
+              <span style="color:#888;">›</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>
